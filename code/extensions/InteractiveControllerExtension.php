@@ -10,7 +10,7 @@ class InteractiveControllerExtension extends Extension
 {
     public function onAfterInit() {
         Requirements::javascript(THIRDPARTY_DIR.'/jquery/jquery.js');
-        Requirements::javascript('advertisements/javascript/interactives.js');
+        Requirements::javascript('interactives/javascript/interactives.js');
 
         $url = $this->owner->getRequest()->getURL();
 

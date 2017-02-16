@@ -24,6 +24,7 @@ class InteractiveCampaign extends DataObject {
 
     private static $extensions = array(
         'InteractiveLocationExtension',
+        'VersionedDataObject',
     );
 
     public function getCMSFields()
@@ -41,6 +42,11 @@ class InteractiveCampaign extends DataObject {
 
         $fields->replaceField('DisplayType', $df = DropdownField::create('DisplayType', 'Use items as', $options));
         $df->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
+
+        $grid = $fields->dataFieldByName('Interactives');
+        $config = $grid->getConfig();
+        $config->removeComponentsByType('GridFieldDetailForm');
+        $config->addComponent(new VersionedDataObjectDetailsForm());
 
         return $fields;
     }

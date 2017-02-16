@@ -35,6 +35,7 @@ class Interactive extends DataObject {
 
     private static $extensions = array(
         'InteractiveLocationExtension',
+        'VersionedDataObject',
     );
 
     private static $tracker_type = 'Local';
