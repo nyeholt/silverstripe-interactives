@@ -18,7 +18,7 @@
 	"extra": {
 		"installer-name": "interactives",
 		"branch-alias": {
-			"dev-master": "2.0.x-dev"
+			"dev-master": "1.0.x-dev"
 		}
 	}
 }
