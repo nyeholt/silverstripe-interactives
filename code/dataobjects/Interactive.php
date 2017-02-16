@@ -37,12 +37,14 @@ class Interactive extends DataObject {
         'InteractiveLocationExtension',
     );
 
+    private static $tracker_type = 'Local';
+
     private static $summary_fields = array('Title', 'Clicks', 'Impressions', 'Completes');
 
 	public function getCMSFields() {
 		$fields = new FieldList();
 
-        $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After',];
+        $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content'];
         $transitions = ['show' => 'Immediate', 'fadeIn' => 'Fade In', 'slideDown' => 'Slide Down'];
         
 		$fields->push(new TabSet('Root', new Tab('Main',

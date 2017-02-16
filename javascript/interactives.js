@@ -13,7 +13,7 @@
     
     var uuid = null;
     
-    var allowed_add_actions = ['prepend', 'append', 'before', 'after'];
+    var allowed_add_actions = ['prepend', 'append', 'before', 'after', 'html'];
     
     var current_id = get_url_param('int_id');
     
@@ -219,7 +219,9 @@
                 $(this).addClass('int-track-view');
             }
 
-            if (config.trackforward) {
+            // if there's a completion element identified, we pass on the information about
+            // this item in the link
+            if (item.CompletionElement) {
                 var append = 'int_src=' + current_uuid() + '&int_id=' + item.ID;
                 var newLink = $(this).attr('href');
                 if (newLink.indexOf('?') >= 0) {
