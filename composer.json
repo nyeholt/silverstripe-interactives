@@ -1,10 +1,10 @@
 {
-	"name": "nyeholt/silverstripe-advertisements",
+	"name": "nyeholt/silverstripe-interactives",
 	"type": "silverstripe-module",
-	"description": "A simple mechanism for implementing tracked advertisements",
+	"description": "A simple mechanism for implementing tracked interactive elements",
 	"license": "BSD-3-Clause",
-	"keywords": ["silverstripe", "advertisements", "ad campaign"],
-	"homepage": "https://github.com/nyeholt/silverstripe-advertisements",
+	"keywords": ["silverstripe", "interactives", "advertisements", "ad campaign"],
+	"homepage": "https://github.com/nyeholt/silverstripe-interactives",
 	"authors": [
 		{
 			"name": "Marcus Nyeholt",
@@ -12,10 +12,11 @@
 		}
 	],
 	"require": {
-		"silverstripe/framework": "3.*"
+		"silverstripe/framework": "3.*",
+		"heyday/silverstripe-versioneddataobjects": "~1.0"
 	},
 	"extra": {
-		"installer-name": "advertisements",
+		"installer-name": "interactives",
 		"branch-alias": {
 			"dev-master": "1.0.x-dev"
 		}
