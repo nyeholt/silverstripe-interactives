@@ -80,7 +80,7 @@ class InteractiveCampaign extends DataObject {
                 continue;
             }
 
-            $items[] = $ad->forJson();
+            $items[] = $ad->forDisplay();
             if ($ad->ExternalCssID) {
                 Requirements::css($ad->getUrl());
             }

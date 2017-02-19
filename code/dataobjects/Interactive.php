@@ -159,7 +159,12 @@ class Interactive extends DataObject {
 		return $tag;
 	}
 
-    public function forJson() {
+    /**
+     * Convert this interactive to a format for display
+     *
+     * @return array
+     */
+    public function forDisplay() {
         $content = strlen($this->HTMLContent) ? $this->HTMLContent : $this->forTemplate();
         
         $data = array(
