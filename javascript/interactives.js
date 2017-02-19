@@ -164,7 +164,8 @@
      */
     function add_interactive_item(item) {
         var target;
-        var addFunction = 'prepend';
+        var addFunction = '';
+        var holder = null;
         
         var effect = 'show';
         
@@ -201,16 +202,21 @@
             }
         }
         
-        if (item.Location != 'prepend') {
+        if (item.Location != 'existing') {
             var canUse = allowed_add_actions.indexOf(item.Location);
-            addFunction = canUse >= 0 ? item.Location : 'prepend';
+            addFunction = canUse >= 0 ? item.Location : '';
         }
         
         if (item.Transition && item.Transition != 'show') {
             effect = item.Transition;
         }
         
-        var holder = $('<div class="ss-interactive-item">').hide().append(item.Content);
+        if (addFunction.length) {
+            holder = $('<div class="ss-interactive-item">').hide().append(item.Content);
+        } else {
+            holder = target;
+            holder.addClass('ss-interactive-item');
+        }
         
         holder.find('a').each(function () {
             $(this).attr('data-intid', item.ID);
@@ -241,12 +247,15 @@
         
         var timeout = item.Delay ? item.Delay : 0;
         
-        setTimeout(function () {
-            // Add the item using the appropriate location
-            target[addFunction](holder);
-            // and effect for showing
-            holder[effect]();
-        }, timeout);
+        if (addFunction.length) {
+            setTimeout(function () {
+                // Add the item using the appropriate location
+                target[addFunction](holder);
+                // and effect for showing
+                holder[effect]();
+            }, timeout);
+        }
+        
     };
 
     function current_uuid() {

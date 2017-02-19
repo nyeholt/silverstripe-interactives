@@ -45,7 +45,7 @@ class Interactive extends DataObject {
 	public function getCMSFields() {
 		$fields = new FieldList();
 
-        $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content'];
+        $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content', 'existing' => 'Existing content'];
         $transitions = ['show' => 'Immediate', 'fadeIn' => 'Fade In', 'slideDown' => 'Slide Down'];
         
 		$fields->push(new TabSet('Root', new Tab('Main',
@@ -53,7 +53,7 @@ class Interactive extends DataObject {
 			TextField::create('TargetURL', 'Target URL')->setRightTitle('Or select a page below'),
             new Treedropdownfield('InternalPageID', 'Internal Page Link', 'Page'),
             TextField::create('Element', 'Relative Element')->setRightTitle('CSS selector for element to appear with'),
-            DropdownField::create('Location', 'Location in / near element', $locations),
+            DropdownField::create('Location', 'Location in / near element', $locations)->setRightTitle('"Use existing" to bind to existing content'),
             NumericField::create('Frequency', 'Display frequency')->setRightTitle('1 in N number of people will see this'),
             NumericField::create('Delay', 'Delay display (milliseconds)'),
             DropdownField::create('Transition', 'What display effect should be used?', $transitions),
@@ -79,7 +79,11 @@ class Interactive extends DataObject {
 			$fields->addFieldToTab('Root.Main', new ReadonlyField('Impressions', 'Impressions', $impressions), 'Title');
 			$fields->addFieldToTab('Root.Main', new ReadonlyField('Clicks', 'Clicks', $clicks), 'Title');
 
+            $contentHelp = 'Any link in this content will trigger a tracking event. Select "Existing content" as the Location field to '.
+                'bind to items contained in the named element instead of entering content here';
+            
             $fields->addFieldsToTab('Root.Content', array(
+                LiteralField::create('ContentHelp', _t('Interactives.CONTENT_HELP', $contentHelp)),
                 new UploadField('Image'),
                 new TextareaField('HTMLContent')
             ));
