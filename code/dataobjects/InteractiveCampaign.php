@@ -12,6 +12,7 @@ class InteractiveCampaign extends DataObject {
 		'Expires'			=> 'Date',
         'ResetStats'        => 'Boolean',
         'DisplayType'       => 'Varchar(64)',
+        'RecordIn'          => 'Varchar(64)',
 	);
 
 	private static $has_many = array(
@@ -25,6 +26,11 @@ class InteractiveCampaign extends DataObject {
     private static $extensions = array(
         'InteractiveLocationExtension',
         'VersionedDataObject',
+    );
+
+    private static $record_in_options = array(
+        'Local'         => 'Local',
+        'Google'        => 'Google',
     );
 
     public function getCMSFields()
@@ -42,6 +48,9 @@ class InteractiveCampaign extends DataObject {
 
         $fields->replaceField('DisplayType', $df = DropdownField::create('DisplayType', 'Use items as', $options));
         $df->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
+
+        $fields->replaceField('RecordIn', $df = DropdownField::create('RecordIn', 'Record events in', self::config()->record_in_options));
+        $df->setEmptyString('No recording');
 
         $grid = $fields->dataFieldByName('Interactives');
         $config = $grid->getConfig();
