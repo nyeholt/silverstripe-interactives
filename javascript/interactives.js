@@ -42,7 +42,7 @@
         }
         
         // bind globally available API endpoints now
-        window.SSInteractives.addInteractiveItem = add_interactive_item;
+        window.SSInteractives.addInteractiveItem = addInteractiveItem;
         window.SSInteractives.track = tracker.track;
 
         var recorded = {};
@@ -57,7 +57,7 @@
         // see if we have any items to display
         if (config.campaigns.length) {
             for (var j = 0; j < config.campaigns.length; j++) {
-                add_campaign(config.campaigns[j]);
+                addCampaign(config.campaigns[j]);
             }
         }
         
@@ -134,7 +134,7 @@
      * @param object campaign
      * @returns 
      */
-    function add_campaign(campaign) {
+    function addCampaign(campaign) {
         if (campaign.interactives.length) {
             var cookie_name = 'cmp_' + campaign.id;
             // see what type; if it's all, or just a specific ID to show
@@ -165,7 +165,7 @@
                     set_cookie(cookie_name, item.ID);
                 }
 
-                add_interactive_item(item);
+                addInteractiveItem(item);
                 added = true;
             }
             
@@ -194,10 +194,10 @@
                 // if we're looking for a particular ID
                 if (showId) {
                     if (item.ID == showId) {
-                        return add_interactive_item(item);
+                        return addInteractiveItem(item);
                     }
                 } else {
-                    add_interactive_item(item);
+                    addInteractiveItem(item);
                 }
             }
         }
@@ -212,7 +212,7 @@
      * @param {type} item
      * @returns {undefined}
      */
-    function add_interactive_item(item) {
+    function addInteractiveItem(item) {
         var target;
         var addFunction = '';
         var holder = null;
