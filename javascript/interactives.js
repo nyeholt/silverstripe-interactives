@@ -22,8 +22,6 @@
     var Trackers = {};
     
     $().ready(function () {
-        
-
         if (!window.SSInteractives) {
             return;
         }
@@ -64,15 +62,26 @@
         }
         
         var recordClick = function (e) {
-            var directClick = e.which == 1 && !(e.shiftKey || e.ctrlKey);
+            var isLink = $(this).prop("tagName").toLowerCase() === 'a';
             
+            // is there a specific type of click
+            var clickType = $(this).attr('data-int-type');
+            if (!clickType) {
+                clickType = 'clk';
+            }
+
+            // was it directly clicked, or clicked into a new tab?
+            // if it was middleclicked, we still want to record, but we don't
+            // handle the directClick
+            var directClick = isLink ? (e.which == 1 && !(e.shiftKey || e.ctrlKey)) : true;
+
             if (directClick) {
                 e.preventDefault();
             }
             
             var adId = $(this).attr('data-intid');
             if (e.which < 3) {
-                tracker.track(adId, 'clk');
+                tracker.track(adId, clickType);
             }
 
             if ($(this).hasClass('hide-on-interact')) {
@@ -82,12 +91,16 @@
             }
 
 
-            // if we're opening locally
+            // if we're opening locally, capture the click, and 
+            // location.href things. This allows the analytics to
+            // load before the page unload is triggered. 
             if (directClick) {
-                var navLink = $(this).attr('href');
-                setTimeout(function () {
-                    window.location.href = navLink;
-                }, 300);
+                if (isLink) {
+                    var navLink = $(this).attr('href');
+                    setTimeout(function () {
+                        window.location.href = navLink;
+                    }, 200);
+                }
             }
         };
 
@@ -141,6 +154,8 @@
             }
             
             // now check for random / stickyrandom if needbe
+            var added = false;
+            
             if (!showId && campaign.display !== 'all') {
                 showIndex = Math.floor(Math.random() * (campaign.interactives.length));
                 
@@ -150,12 +165,32 @@
                     set_cookie(cookie_name, item.ID);
                 }
 
-                return add_interactive_item(item);
+                add_interactive_item(item);
+                added = true;
             }
             
             
+            // we _must_ go through all the interactives though because the item _may_ be
+            // hitting an inbound request
             for (var i = 0; i < campaign.interactives.length; i++) {
                 item = campaign.interactives[i];
+                
+                if (current_id && current_id == item.ID) {
+                    // bind a handler for the 'completion' element, but we don't display anything
+                    if (item.CompletionElement) {
+                        $(document).on('click', item.CompletionElement, function () {
+                            tracker.track("" + item.ID, 'cpl', current_uuid());
+                        });
+                    }
+                    continue;
+                }
+
+                // we don't need to add if 'added' flagged based on random
+                // determination above
+                if (added) {
+                    continue;
+                }
+                
                 // if we're looking for a particular ID
                 if (showId) {
                     if (item.ID == showId) {
@@ -183,16 +218,6 @@
         var holder = null;
         
         var effect = 'show';
-        
-        if (current_id && current_id == item.ID) {
-            // bind a handler for the 'completion' element, but we don't display anything
-            if (item.CompletionElement) {
-                $(document).on('mouseup', item.CompletionElement, function () {
-                    tracker.track(item.ID, 'cpl', current_uuid());
-                });
-            }
-            return;
-        }
         
         var hidden = get_cookie('interacted');
         if (hidden && hidden.length) {
