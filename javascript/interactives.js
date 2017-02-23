@@ -63,21 +63,36 @@
             }
         }
         
-        var recordClick = function (b) {
-            var adId = $(this).attr('data-intid');
-            if (b.which < 3) {
-                tracker.track(adId, 'clk');
+        var recordClick = function (e) {
+            var directClick = e.which == 1 && !(e.shiftKey || e.ctrlKey);
+            
+            if (directClick) {
+                e.preventDefault();
             }
             
+            var adId = $(this).attr('data-intid');
+            if (e.which < 3) {
+                tracker.track(adId, 'clk');
+            }
+
             if ($(this).hasClass('hide-on-interact')) {
                 var blocked = get_cookie('interacted');
                 blocked += '|' + adId;
                 set_cookie('interacted', blocked);
             }
+
+
+            // if we're opening locally
+            if (directClick) {
+                var navLink = $(this).attr('href');
+                setTimeout(function () {
+                    window.location.href = navLink;
+                }, 300);
+            }
         };
 
         if (config.trackclicks) {
-            $(document).on('mouseup', 'a.int-link', recordClick);
+            $(document).on('click', 'a.int-link', recordClick);
         }
         
         var processViews = function () {
