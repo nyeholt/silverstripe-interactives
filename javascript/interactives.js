@@ -295,6 +295,12 @@
         
         holder.find('a').each(function () {
             $(this).attr('data-intid', item.ID);
+            
+            // see whether we have a specific target link to replace this with
+            if (item.TargetLink && item.TargetLink.length > 0) {
+                $(this).attr('href', item.TargetLink);
+            }
+            
             $(this).addClass('int-link'); 
             if (item.TrackViews) {
                 $(this).addClass('int-track-view');

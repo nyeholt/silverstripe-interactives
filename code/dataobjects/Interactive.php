@@ -50,7 +50,7 @@ class Interactive extends DataObject {
         
 		$fields->push(new TabSet('Root', new Tab('Main',
 			new TextField('Title', 'Title'),
-			TextField::create('TargetURL', 'Target URL')->setRightTitle('Or select a page below'),
+			TextField::create('TargetURL', 'Target URL')->setRightTitle('Or select a page below. NOTE: This will replace any links in the interactive\'s content! Leave both blank to use source links'),
             new Treedropdownfield('InternalPageID', 'Internal Page Link', 'Page'),
             TextField::create('Element', 'Relative Element')->setRightTitle('CSS selector for element to appear with'),
             DropdownField::create('Location', 'Location in / near element', $locations)->setRightTitle('"Use existing" to bind to existing content'),
@@ -184,6 +184,10 @@ class Interactive extends DataObject {
             'TrackViews'    => strlen($this->TrackViews) ? $this->TrackViews == 'yes' : self::config()->view_tracking,
         );
 
+        $target = $this->Link();
+        if (strlen($target)) {
+            $data['TargetLink'] = $target;
+        }
         return $data;
     }
 
