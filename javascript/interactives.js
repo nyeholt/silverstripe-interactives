@@ -17,6 +17,10 @@
     
     var current_id = get_url_param('int_id');
     
+    var recorded = {};
+        
+    var uid = url_uuid();
+    
     var tracker;
 
     var Trackers = {};
@@ -45,10 +49,6 @@
         window.SSInteractives.addInteractiveItem = addInteractiveItem;
         window.SSInteractives.track = tracker.track;
 
-        var recorded = {};
-        
-        var uid = url_uuid();
-        
         // record that a page was loaded because of an interaction with a previous interactive
         if (uid && config.trackforward) {
             tracker.track(current_id, 'int');
@@ -60,77 +60,98 @@
                 addCampaign(config.campaigns[j]);
             }
         }
-        
-        var recordClick = function (e) {
-            var isLink = $(this).prop("tagName").toLowerCase() === 'a';
-            
-            // is there a specific type of click
-            var clickType = $(this).attr('data-int-type');
-            if (!clickType) {
-                clickType = 'clk';
-            }
-
-            // was it directly clicked, or clicked into a new tab?
-            // if it was middleclicked, we still want to record, but we don't
-            // handle the directClick
-            var directClick = isLink ? (e.which == 1 && !(e.shiftKey || e.ctrlKey)) : true;
-
-            if (directClick) {
-                e.preventDefault();
-            }
-            
-            var adId = $(this).attr('data-intid');
-            if (e.which < 3) {
-                tracker.track(adId, clickType);
-            }
-
-            if ($(this).hasClass('hide-on-interact')) {
-                var blocked = get_cookie('interacted');
-                blocked += '|' + adId;
-                set_cookie('interacted', blocked);
-            }
-
-
-            // if we're opening locally, capture the click, and 
-            // location.href things. This allows the analytics to
-            // load before the page unload is triggered. 
-            if (directClick) {
-                if (isLink) {
-                    var navLink = $(this).attr('href');
-                    setTimeout(function () {
-                        window.location.href = navLink;
-                    }, 200);
-                }
-            }
-        };
 
         if (config.trackclicks) {
             $(document).on('click', 'a.int-link', recordClick);
         }
-        
-        var processViews = function () {
-            var ads = $('.int-track-view');
-            var ids = [];
-            for (var i = 0, c = ads.length; i < c; i++) {
-                var adId = $(ads[i]).attr('data-intid');
-                if (recorded[adId]) {
-                    continue;
-                }
-                recorded[adId] = true;
-                ids.push(adId);
-            }
 
-            if (ids.length) {
-                tracker.track(ids.join(','), 'imp');
-            }
-            setTimeout(processViews, 3000);
-        }
-        
         processViews();
     });
     
+    function recordClick(e) {
+        var isLink = $(this).prop("tagName").toLowerCase() === 'a';
+        var navLink = $(this).attr('href');
+        
+        // is there a specific type of click
+        var clickType = $(this).attr('data-int-type');
+        if (!clickType) {
+            clickType = 'clk';
+        }
+
+        // was it directly clicked, or clicked into a new tab?
+        // if it was middleclicked, we still want to record, but we don't
+        // handle the directClick
+        var navigateClick = isLink ? (e.which == 1 && !(e.shiftKey || e.ctrlKey)) : true;
+
+        if (navigateClick) {
+            if (!navLink) {
+                navLink = "";
+            }
+            // check whether it's an in-page hash link.
+            // checks for direct #link, http://fqdn/path/?param=1# and /path?param=2#
+            if (navLink.indexOf('#') === 0 || 
+                    navLink.indexOf(window.location + window.location.search + "#") === 0 ||
+                    navLink.indexOf(window.location.pathname + window.location.search + "#") === 0
+                ) {
+                navigateClick = false;
+            } else {
+                
+                // stop the navigation happening; it'll be picked up later and window.location = redirected
+                e.preventDefault();
+            }
+        }
+
+        var adId = $(this).attr('data-intid');
+        if (e.which < 3) {
+            tracker.track(adId, clickType);
+        }
+
+        if ($(this).hasClass('hide-on-interact')) {
+            var blocked = get_cookie('interacted');
+            blocked += '|' + adId;
+            set_cookie('interacted', blocked);
+        }
+
+
+        // if we're opening locally, capture the click, and 
+        // location.href things. This allows the analytics to
+        // load before the page unload is triggered. 
+        if (navigateClick && isLink) {
+            setTimeout(function () {
+                window.location.href = navLink;
+            }, 200);
+        }
+    };
+
+
+    /**
+     * Processes all the views of ads on the current page
+     * 
+     * @returns 
+     */
+    function processViews() {
+        var ads = $('.int-track-view');
+        var ids = [];
+        for (var i = 0, c = ads.length; i < c; i++) {
+            var adId = $(ads[i]).attr('data-intid');
+            if (recorded[adId]) {
+                continue;
+            }
+            recorded[adId] = true;
+            ids.push(adId);
+        }
+
+        if (ids.length) {
+            tracker.track(ids.join(','), 'imp');
+        }
+        setTimeout(processViews, 3000);
+    }
+
+    
+    
     /**
      * Add a whole campaign to the page. 
+     * 
      * @param object campaign
      * @returns 
      */
@@ -175,13 +196,10 @@
             for (var i = 0; i < campaign.interactives.length; i++) {
                 item = campaign.interactives[i];
                 
+                // we _dont_ re-add an item if it's the _current target_ of a given interactive. 
+                // however we _do_ check if it needs to be handled as a completion event
                 if (current_id && current_id == item.ID) {
-                    // bind a handler for the 'completion' element, but we don't display anything
-                    if (item.CompletionElement) {
-                        $(document).on('click', item.CompletionElement, function () {
-                            tracker.track("" + item.ID, 'cpl', current_uuid());
-                        });
-                    }
+                    bindCompletionItem(item);
                     continue;
                 }
 
@@ -200,6 +218,23 @@
                     addInteractiveItem(item);
                 }
             }
+        }
+    }
+    
+    /**
+     * Binds the completion interaction of a given item 
+     * 
+     * @param object item
+     * @returns 
+     */
+    function bindCompletionItem(item) {
+        // bind a handler for the 'completion' element, but we don't display anything
+        if (item.CompletionElement) {
+            $(document).on('click', item.CompletionElement, function (e) {
+                $(this).attr('data-int-type', 'cpl');
+                $(this).attr('data-intid', item.ID);
+                recordClick.call(this, e);
+            });
         }
     }
     
@@ -333,13 +368,13 @@
         track: function (ids, event, uid) {
             var category = 'Interactives';
             
-            var uid = current_uuid();
+            var uid = uid ? uid : current_uuid();
             var action = event;
             
             var allIds = ids.split(',');
             
             for (var i = 0; i < allIds.length; i++) {
-                var label = 'id:' + allIds[i] + '|uid:' + current_uuid();
+                var label = 'id:' + allIds[i] + '|uid:' + uid;
                 if (window._gaq) {
                     window._gaq.push(['_trackEvent', category, action, label]);
                 } else if (window.ga) {
