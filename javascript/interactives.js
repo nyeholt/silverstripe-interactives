@@ -69,7 +69,8 @@
     });
     
     function recordClick(e) {
-        var isLink = $(this).prop("tagName").toLowerCase() === 'a';
+        var target = $(this).prop("tagName").toLowerCase();
+        var isLink = target === 'a';
         var navLink = $(this).attr('href');
         
         // is there a specific type of click
@@ -81,7 +82,7 @@
         // was it directly clicked, or clicked into a new tab?
         // if it was middleclicked, we still want to record, but we don't
         // handle the directClick
-        var navigateClick = isLink ? (e.which == 1 && !(e.shiftKey || e.ctrlKey)) : true;
+        var navigateClick = isLink ? (e.which == 1 && !(e.shiftKey || e.ctrlKey)) : false;
 
         if (navigateClick) {
             if (!navLink) {
@@ -96,8 +97,6 @@
                 navigateClick = false;
             } else {
                 
-                // stop the navigation happening; it'll be picked up later and window.location = redirected
-                e.preventDefault();
             }
         }
 
@@ -117,13 +116,30 @@
         // location.href things. This allows the analytics to
         // load before the page unload is triggered. 
         if (navigateClick && isLink) {
+            // stop the navigation happening; it'll be picked up later and window.location = redirected
+            e.preventDefault();
+
             setTimeout(function () {
                 window.location.href = navLink;
             }, 200);
         }
+        
+        // or was it a form?
+        if (target === 'input') {
+            if ($(this).attr('type') === 'submit') {
+                // submit the parent form
+                e.preventDefault();
+                
+                var form = $(this).parents('form');
+                $(this).val('Please wait...');
+                
+                setTimeout(function () {
+                    form.submit();
+                }, 200);
+            }
+        }
     };
-
-
+    
     /**
      * Processes all the views of ads on the current page
      * 
@@ -233,7 +249,7 @@
             $(document).on('click', item.CompletionElement, function (e) {
                 $(this).attr('data-int-type', 'cpl');
                 $(this).attr('data-intid', item.ID);
-                recordClick.call(this, e);
+                return recordClick.call(this, e);
             });
         }
     }
