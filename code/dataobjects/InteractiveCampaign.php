@@ -44,9 +44,12 @@ class InteractiveCampaign extends DataObject {
         $df->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
 
         $grid = $fields->dataFieldByName('Interactives');
-        $config = $grid->getConfig();
-        $config->removeComponentsByType('GridFieldDetailForm');
-        $config->addComponent(new VersionedDataObjectDetailsForm());
+        if ($grid) {
+            $config = $grid->getConfig();
+            $config->removeComponentsByType('GridFieldDetailForm');
+            $config->addComponent(new VersionedDataObjectDetailsForm());
+        }
+
 
         return $fields;
     }
