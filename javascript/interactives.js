@@ -226,8 +226,12 @@
                 if (campaign.display == 'stickyrandom') {
                     set_cookie(cookie_name, item.ID);
                 }
-
-                addInteractiveItem(item);
+                
+                if (current_id && current_id == item.ID) {
+                    bindCompletionItem(item);
+                } else {
+                    addInteractiveItem(item);
+                }
                 added = true;
             }
             
@@ -245,7 +249,8 @@
                 }
 
                 // we don't need to add if 'added' flagged based on random
-                // determination above
+                // determination above; however, the completion event _may_ need
+                // to be added
                 if (added) {
                     continue;
                 }
@@ -381,6 +386,9 @@
     
     /**
      * Looks up the campaign fir a given interactive item
+     * 
+     * NOTE: This lookup could be a lot quicker, as it's scanning 
+     * all items each call.
      * 
      * @param {type} interactiveId
      * @returns {.campaign@arr;interactives.interactives}
