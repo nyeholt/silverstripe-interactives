@@ -35,6 +35,7 @@ class InteractiveControllerExtension extends Extension
                 'interactives' => $interactives,
                 'display'       => $campaign->DisplayType,
                 'id'            => $campaign->ID,
+                'trackIn'       => $campaign->TrackIn,
             );
         }
 

@@ -21,7 +21,35 @@
         
     var uid = url_uuid();
     
-    var tracker;
+    var defaultTracker = '';
+    
+    var tracker = {
+        track: function (ids, event, uid) {
+            var idsArr = (""+ ids).split(',');
+            if (idsArr.length <= 0) {
+                return;
+            }
+            
+            var campaign = findCampaignFor(idsArr[0]);
+            
+            var trackFn = null;
+            
+            if (campaign && campaign.trackIn && Trackers[campaign.trackIn]) {
+                trackFn = Trackers[campaign.trackIn].track;
+            } else {
+                trackFn = Trackers[defaultTracker].track;
+            }
+            
+            
+            if (trackFn) {
+                trackFn(ids, event, uid);
+            } else {
+                if (window.console && window.console.log) {
+                    console.log("Failed to find interactives endpoints");
+                }
+            }
+        }
+    };
 
     var Trackers = {};
     
@@ -39,26 +67,23 @@
             config.endpoint = base + 'interactive-action/trk';
         }
 
-        tracker = Trackers[config.tracker] ? Trackers[config.tracker] : Trackers.Local;
-        
-        if (!tracker) {
-            return;
-        }
+        defaultTracker = config.tracker ? config.tracker : 'Local';
         
         // bind globally available API endpoints now
         window.SSInteractives.addInteractiveItem = addInteractiveItem;
         window.SSInteractives.track = tracker.track;
 
-        // record that a page was loaded because of an interaction with a previous interactive
-        if (uid && config.trackforward) {
-            tracker.track(current_id, 'int');
-        }
 
         // see if we have any items to display
         if (config.campaigns.length) {
             for (var j = 0; j < config.campaigns.length; j++) {
                 addCampaign(config.campaigns[j]);
             }
+        }
+        
+        // record that a page was loaded because of an interaction with a previous interactive
+        if (uid &&  current_id && config.trackforward) {
+            tracker.track(current_id, 'int');
         }
 
         if (config.trackclicks) {
@@ -352,7 +377,27 @@
                 holder[effect]();
             }, timeout);
         }
-        
+    };
+    
+    /**
+     * Looks up the campaign fir a given interactive item
+     * 
+     * @param {type} interactiveId
+     * @returns {.campaign@arr;interactives.interactives}
+     */
+    function findCampaignFor(interactiveId) {
+        if (config.campaigns.length) {
+            for (var i = 0; i < config.campaigns.length; i++) {
+                var campaign = config.campaigns[i];
+                if (campaign.interactives.length) {
+                    for (var j = 0; j < campaign.interactives.length; j++) {
+                        if (campaign.interactives[j].ID == interactiveId) {
+                            return campaign;
+                        }
+                    }
+                }
+            }
+        }
     };
 
     function current_uuid() {
@@ -385,6 +430,8 @@
     function url_uuid() {
         return get_url_param('int_src');
     }
+    
+    
     
     Trackers.Google = {
         track: function (ids, event, uid) {

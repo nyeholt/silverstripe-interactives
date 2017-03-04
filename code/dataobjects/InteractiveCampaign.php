@@ -12,6 +12,7 @@ class InteractiveCampaign extends DataObject {
 		'Expires'			=> 'Date',
         'ResetStats'        => 'Boolean',
         'DisplayType'       => 'Varchar(64)',
+        'TrackIn'           => 'Varchar(64)',
 	);
 
 	private static $has_many = array(
@@ -50,6 +51,8 @@ class InteractiveCampaign extends DataObject {
             $config->addComponent(new VersionedDataObjectDetailsForm());
         }
 
+        $options = ['' => 'Default', 'Local' => "Locally", 'Google' => 'Google events'];
+        $fields->replaceField('TrackIn', $df = DropdownField::create('TrackIn', 'Track interactions in', $options));
 
         return $fields;
     }
