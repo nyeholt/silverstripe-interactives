@@ -206,7 +206,7 @@ class Interactive extends DataObject {
 			$link = Convert::raw2att($this->InternalPageID ? $this->InternalPage()->AbsoluteLink() : $this->TargetURL);
 
 		} else {
-			$link = Controller::join_links(Director::baseURL(), 'interactive-action/go/'.$this->ID);
+			$link = Controller::join_links(Director::baseURL(), 'int-act/go/'.$this->ID);
 		}
 		return $link;
 	}

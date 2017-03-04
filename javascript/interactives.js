@@ -64,7 +64,7 @@
 
         if (!config.endpoint) {
             var base = $('base').attr('href');
-            config.endpoint = base + 'interactive-action/trk';
+            config.endpoint = base + 'int-act/trk';
         }
 
         defaultTracker = config.tracker ? config.tracker : 'Local';
