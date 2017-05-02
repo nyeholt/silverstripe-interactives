@@ -1,5 +1,7 @@
 <?php
 
+use Heyday\VersionedDataObjects\VersionedModelAdmin;
+
 /**
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/BSD-license

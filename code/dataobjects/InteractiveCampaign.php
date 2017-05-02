@@ -25,7 +25,7 @@ class InteractiveCampaign extends DataObject {
 
     private static $extensions = array(
         'InteractiveLocationExtension',
-        'VersionedDataObject',
+        'Heyday\\VersionedDataObjects\\VersionedDataObject',
     );
 
     public function getCMSFields()
@@ -48,7 +48,7 @@ class InteractiveCampaign extends DataObject {
         if ($grid) {
             $config = $grid->getConfig();
             $config->removeComponentsByType('GridFieldDetailForm');
-            $config->addComponent(new VersionedDataObjectDetailsForm());
+            $config->addComponent(new Heyday\VersionedDataObjects\VersionedDataObjectDetailsForm());
         }
 
         $options = ['' => 'Default', 'Local' => "Locally", 'Google' => 'Google events'];
