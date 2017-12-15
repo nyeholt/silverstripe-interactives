@@ -17,6 +17,16 @@
     
     var current_id = get_url_param('int_id');
     
+    /**
+     * A list of the interactive elements we'll try to add again later 
+     * for any dynamic elements added to the page. 
+     * 
+     * @type Array
+     */
+    var add_later = {};
+    
+    window.SS_ADD = add_later;
+    
     var recorded = {};
         
     var uid = url_uuid();
@@ -91,6 +101,8 @@
         }
 
         processViews();
+        
+        setTimeout(reprocess, 5000);
     });
     
     function recordClick(e) {
@@ -185,7 +197,15 @@
         if (ids.length) {
             tracker.track(ids.join(','), 'imp');
         }
-        setTimeout(processViews, 3000);
+    }
+    
+    function reprocess() {
+        for (var id in add_later) {
+            addInteractiveItem(add_later[id]);
+        }
+        processViews();
+        
+        setTimeout(reprocess, 3000);
     }
 
     
@@ -318,12 +338,22 @@
         }
         
         if (item.Element) {
-            target = $(item.Element);
+            // we can only re-add items that have a specific 'element' being targeted, 
+            // this way we can skip them later on if we find the element again
+            add_later['item-' + item.ID] = item;
+            
+            target = $(item.Element).filter(function () {
+                return !$(this).hasClass('ss-int-tgt');
+            });
+            
             if (!target.length) {
                 return;
             }
+            target.each(function() {
+                $(this).addClass('ss-int-tgt');
+            });
         }
-        
+
         if (item.Location != 'existing') {
             var canUse = allowed_add_actions.indexOf(item.Location);
             addFunction = canUse >= 0 ? item.Location : '';
@@ -340,41 +370,43 @@
             holder.addClass('ss-interactive-item');
         }
         
-        holder.find('a').each(function () {
-            $(this).attr('data-intid', item.ID);
-            
-            // see whether we have a specific target link to replace this with
-            if (item.TargetLink && item.TargetLink.length > 0) {
-                $(this).attr('href', item.TargetLink);
-            }
-            
-            $(this).addClass('int-link'); 
+        holder.each(function () {
+            $(this).find('a').each(function () {
+                $(this).attr('data-intid', item.ID);
+
+                // see whether we have a specific target link to replace this with
+                if (item.TargetLink && item.TargetLink.length > 0) {
+                    $(this).attr('href', item.TargetLink);
+                }
+
+                $(this).addClass('int-link'); 
+
+                // if there's a completion element identified, we pass on the information about
+                // this item in the link
+                if (item.CompletionElement) {
+                    var append = 'int_src=' + current_uuid() + '&int_id=' + item.ID;
+                    var newLink = $(this).attr('href');
+                    if (newLink.indexOf('?') >= 0) {
+                        append = "&" + append;
+                    } else {
+                        append = "?" + append;
+                    }
+                    $(this).attr('href', newLink + append);
+                }
+
+                if (item.HideAfterInteraction) {
+                    $(this).addClass('hide-on-interact');
+                }
+            });
+
+            $(this).attr('data-intid', item.ID)
             if (item.TrackViews) {
                 $(this).addClass('int-track-view');
             }
-
-            // if there's a completion element identified, we pass on the information about
-            // this item in the link
-            if (item.CompletionElement) {
-                var append = 'int_src=' + current_uuid() + '&int_id=' + item.ID;
-                var newLink = $(this).attr('href');
-                if (newLink.indexOf('?') >= 0) {
-                    append = "&" + append;
-                } else {
-                    append = "?" + append;
-                }
-                $(this).attr('href', newLink + append);
-            }
-            
-            if (item.HideAfterInteraction) {
-                $(this).addClass('hide-on-interact');
-            }
         });
         
-        
-        
         var timeout = item.Delay ? item.Delay : 0;
-        
+
         if (addFunction.length) {
             setTimeout(function () {
                 // Add the item using the appropriate location

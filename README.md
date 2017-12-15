@@ -17,12 +17,9 @@ SilverStripe 3.1.x
 Add
 
 ```
-Page:
+Page_Controller:
   extensions:
-    - AdvertisementExtension
-SiteConfig:
-  extensions:
-    - AdvertisementExtension
+    - InteractiveControllerExtension
 ```
 
 to your project's configuration yml file.
