@@ -275,13 +275,14 @@
      */
     function bindCompletionItem(item) {
         // bind a handler for the 'completion' element, but we don't display anything
-        if (item.CompletionElement) {
+        if (item.CompletionElement  && !item.interactiveAlreadyBound) {
             $(document).on('click', item.CompletionElement, function (e) {
                 $(this).attr('data-int-type', 'cpl');
                 $(this).attr('data-intid', item.ID);
                 return recordClick.call(this, e);
             });
         }
+        item.interactiveAlreadyBound = true;
     }
     
     /**
