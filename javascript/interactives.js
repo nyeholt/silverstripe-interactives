@@ -65,9 +65,21 @@
     
     $().ready(function () {
         if (!window.SSInteractives) {
+            // do a timer because sometimes this lib loads before the rest of the 
+            // page has had a chance. 
+            setTimeout(function () {
+                if (window.SSInteractives) {
+                    init_interactives();
+                }
+            }, 5000);
+            
             return;
         }
         
+        init_interactives();
+    });
+    
+    function init_interactives() {
         for (var property in window.SSInteractives.config) {
             config[property] = window.SSInteractives.config[property];
         }
@@ -103,7 +115,7 @@
         processViews();
         
         setTimeout(reprocess, 5000);
-    });
+    }
     
     function recordClick(e) {
         var target = $(this).prop("tagName").toLowerCase();
