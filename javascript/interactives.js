@@ -121,6 +121,7 @@
         var target = $(this).prop("tagName").toLowerCase();
         var isLink = target === 'a';
         var navLink = $(this).attr('href');
+        var newWindow = $(this).attr('target') === '_blank';
         
         // is there a specific type of click
         var clickType = $(this).attr('data-int-type');
@@ -169,7 +170,12 @@
             e.preventDefault();
 
             setTimeout(function () {
-                window.location.href = navLink;
+                if (newWindow) {
+                    window.open(navLink);
+                } else {
+                    window.location.href = navLink;
+                }
+                
             }, 200);
         }
         
