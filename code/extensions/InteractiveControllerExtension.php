@@ -26,7 +26,12 @@ class InteractiveControllerExtension extends Extension
         $items = [];
         foreach ($campaigns as $campaign) {
             // collect its interactives.
-            if (!$campaign->viewableOn($url, $page ? $page->class : null)) {
+            $anyViewable = $campaign->invokeWithExtensions('viewableOn', $url, $page ? $page->class : null);
+            $canView = array_reduce($anyViewable, function ($carry, $item) {
+                return $carry && $item;
+            }, true);
+
+            if (!$canView) {
                 continue;
             }
 

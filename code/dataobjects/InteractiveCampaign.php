@@ -94,6 +94,24 @@ class InteractiveCampaign extends DataObject {
         return $items;
     }
 
+    /**
+     * Is this campaign viewable? Checks start / expires dates
+     *
+     * @param type $url
+     * @param type $pageType
+     */
+    public function viewableOn($url, $pageType = null) {
+        $start = 0; $end = strtotime('2038-01-01');
+        if ($this->Begins) {
+            $start = strtotime(date('Y-m-d 00:00:00', strtotime($this->Begins)));
+        }
+        if ($this->Expires) {
+            $end =  strtotime(date('Y-m-d 23:59:59', strtotime($this->Expires)));
+        }
+
+        return $start < time() && $end > time();
+    }
+
 	public function getRandomAd() {
 		$number = $this->Interactives()->count();
 		if ($number) {
