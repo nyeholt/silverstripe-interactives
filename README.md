@@ -1,12 +1,12 @@
-# SilverStripe Advertisement Management module
+# SilverStripe Interactives Management module
 
-A simple module to manage advertisements on pages.
+A simple module to manage dynamic, interactive elements (including advertisements) on pages.
 
 ## Maintainer Contact
 
 Marcus Nyeholt
 
-<marcus (at) silverstripe (dot) com (dot) au>
+<marcus (at) symbiote (dot) com (dot) au>
 
 ## Requirements
 
@@ -24,43 +24,32 @@ Page_Controller:
 
 to your project's configuration yml file.
 
-Note that ads are inherited hierarchically, so setting ads on the Site Config
+Note that interactives are inherited hierarchically, so setting ads on the Site Config
 will mean those ads are used across all pages unless specified for a content
 tree otherwise.
 
 
-* Navigate to the "Ads" section
-* Create some Advertisements
-* If you want to group the ads in a collection, create an Ad Campaign. These in turn can be associated with a client.
-* On the Advertisements tab of a page (or Site Config), you can select the individual ads (or campaign) to be displayed.
-* In your page template, use the AdList collection to actually list out the Ads to be displayed. Use the "Me" or "SetRatioSize" helpers to output an image linked as needed for proper click tracking.
+* Navigate to the "Interactives" section
+* Create an Interactive Campaign
+* Configure the campaign - "Use items as" refers to how items are displayed, based on
+  * Always random - every time the campaign is displayed, one item is chosen randomly
+  * Sticky random - the first time the campaign is displayed, one item is chosen randomly and always shown to that user on subsequent loads
+  * All - all items are returned and displayed (think a multi-item ad list)
+* For the campaign site options, you can choose to display on the whole site, specific pages, or choose the whole site and exclude specific URLs
+* Once configured at the top level, add the interactive items themselves. 
 
-	<% loop SiteConfig.AdList %>
-	<div class="ad">
-		$Me
-		<!-- Or, to scale it appropriately -->
-		$SetRatioSize(120,80)
+### Interactives
+  
+A single interactive has a few options with how it is displayed. 
 
-	</div>
-	<% end_loop %>
+* Automatically generated link (Do not enter anything in the "HTMLContent" text area). If an image is attached to the interactive, this image is linked, otherwise the text in the Title field is linked
+* Custom entered HTML (provide in the HTMLContent field)
+* Binding to existing DOM nodes (only applicable if **Location in / near element** is set to "Existing content")
 
-* You can have complete control over how things are output by referring to the ad's Image and Link accessors. Be aware that if you're going to manually output the link, to include a special attribute used if tracking ad views (eg Advertisement::$use\_js\_tracking = true). So, output something like
+Target URLs for the interactive can be set as a fully qualified link, or an internal page object
 
-```
-<a href="$Link" class="adlink" adid="$ID"><img src="$Image.Link" /></a>
-```
+* Relative Element is a jquery selector for inserting the interactive against; the "Location in" option provides the relative positioning to that element
+* Display frequency allows for displaying to only a subset of users (ie to display to 20 percent of people, set this value to 5)
+* The "Completion Element" is another jquery selector indicating the element on the target page that, if clicked, triggers a "complete" event for the given interactive. The usecase here being an interactive pointing to a userdefined form page, by setting this to the form submit button (eg _#UserForm_Form_action_process_) the submit of the form will be tracked
+* If HTMLContent is filled out, this is used as the content of the interactive. 
 
-* Reference an ad directly from a template via
-
-```
-$findAd(Title)
-```
-
-
-Check the Advertisement class for more.
-
-## TODO
-
-Add extension method and include for doing a rotating ad banner
-across all pages. You can do these manually for now via Page\_Controller
-if you want. Just select all Ads and iterate the collection
