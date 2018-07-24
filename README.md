@@ -10,16 +10,18 @@ Marcus Nyeholt
 
 ## Requirements
 
-SilverStripe 3.1.x
+SilverStripe **4.x**
+
+See the 1.x branch for SilverStripe 3 compatible code
 
 ## Documentation
 
 Add
 
 ```
-Page_Controller:
+PageController:
   extensions:
-    - InteractiveControllerExtension
+    - Symbiote\Interactives\Extension\InteractiveControllerExtension
 ```
 
 to your project's configuration yml file.
