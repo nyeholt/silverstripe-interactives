@@ -1,5 +1,17 @@
 <?php
 
+namespace Symbiote\Interactives\Extension;
+
+use Symbiote\MultiValueField\Fields\MultiValueTextField;
+use Symbiote\MultiValueField\Fields\MultiValueDropdownField;
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\TreeMultiselectField;
+use SilverStripe\Forms\ToggleCompositeField;
+use SilverStripe\ORM\DataExtension;
+
+
 /**
  * Defines where in a site an interactive / campaign will appear
  *
@@ -14,10 +26,10 @@ class InteractiveLocationExtension extends DataExtension
     );
 
     private static $many_many = array(
-        'OnPages'       => 'SiteTree',
+        'OnPages'       => SiteTree::class,
     );
 
-    public function updateCMSFields(\FieldList $fields)
+    public function updateCMSFields(FieldList $fields)
     {
         $fields->removeByName('SiteWide');
         $fields->removeByName('OnPages');

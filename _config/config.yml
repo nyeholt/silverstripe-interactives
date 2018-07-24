@@ -1,6 +1,6 @@
 ---
 Name: routes
 ---
-Director:
+SilverStripe\Control\Director:
   rules:
-    'int-act': 'InteractiveController'
+    int-act: Symbiote\Interactives\Control\InteractiveController

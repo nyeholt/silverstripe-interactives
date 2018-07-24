@@ -1,0 +1,10 @@
+mappings:
+  InteractiveImpression: Symbiote\Interactives\Model\InteractiveImpression
+  InteractiveCampaign: Symbiote\Interactives\InteractiveCampaign
+  InteractiveClient: Symbiote\Interactives\InteractiveClient
+  Interactive: Symbiote\Interactives\Interactive
+  InteractiveControllerExtension: Symbiote\Interactives\InteractiveControllerExtension
+  InteractiveLocationExtension: Symbiote\Interactives\InteractiveLocationExtension
+  InteractiveExtension: Symbiote\Interactives\InteractiveExtension
+  InteractiveAdmin: Symbiote\Interactives\InteractiveAdmin
+  InteractiveController: Symbiote\Interactives\InteractiveController

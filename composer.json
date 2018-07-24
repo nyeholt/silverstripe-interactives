@@ -1,6 +1,6 @@
 {
 	"name": "nyeholt/silverstripe-interactives",
-	"type": "silverstripe-module",
+	"type": "silverstripe-vendormodule",
 	"description": "A simple mechanism for implementing tracked interactive elements",
 	"license": "BSD-3-Clause",
 	"keywords": ["silverstripe", "interactives", "advertisements", "ad campaign"],
@@ -8,17 +8,18 @@
 	"authors": [
 		{
 			"name": "Marcus Nyeholt",
-			"email": "marcus@silverstripe.com.au"
+			"email": "marcus@symbiote.com.au"
 		}
 	],
 	"require": {
-		"silverstripe/framework": "3.*",
-		"heyday/silverstripe-versioneddataobjects": "~2.0"
+		"silverstripe/framework": "~4.0"
 	},
 	"extra": {
-		"installer-name": "interactives",
 		"branch-alias": {
-			"dev-master": "1.2.x-dev"
-		}
+			"dev-master": "2.0.x-dev"
+        },
+        "expose": [
+            "client/javascript"
+        ]
 	}
 }

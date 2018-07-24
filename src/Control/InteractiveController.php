@@ -1,5 +1,13 @@
 <?php
 
+namespace Symbiote\Interactives\Control;
+
+use Symbiote\Interactives\Model\Interactive;
+use Symbiote\Interactives\Model\InteractiveImpression;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Control\Controller;
+
+
 /**
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/BSD-license
@@ -75,7 +83,7 @@ class InteractiveController extends Controller {
 		$id = (int) $this->request->param('ID');
 
 		if ($id) {
-			$ad = DataObject::get_by_id('Interactive', $id);
+			$ad = DataObject::get_by_id(Interactive::class, $id);
 			if ($ad && $ad->exists()) {
 				$imp = InteractiveImpression::create(['Interaction' => 'Click']);
 				$imp->InteractiveID = $id;
