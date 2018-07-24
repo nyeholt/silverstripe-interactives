@@ -1,5 +1,10 @@
 <?php
 
+namespace Symbiote\Interactives\Model;
+
+use SilverStripe\Security\Member;
+use SilverStripe\ORM\DataObject;
+
 /**
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
@@ -22,8 +27,8 @@ class InteractiveImpression extends DataObject
         'RemoteIP' => 'Varchar',
     );
     private static $has_one = array(
-        'User' => 'Member',
-        'Interactive' => 'Interactive',
+        'User' => Member::class,
+        'Interactive' => Interactive::class,
     );
     private static $defaults = array(
         'Interaction' => 'View',

@@ -1,5 +1,31 @@
 <?php
 
+namespace Symbiote\Interactives\Model;
+
+use SilverStripe\Forms\TreeDropdownField;
+
+use Symbiote\Interactives\Model\InteractiveCampaign;
+use SilverStripe\Assets\Image;
+use Symbiote\Interactives\Extension\InteractiveLocationExtension;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\NumericField;
+use SilverStripe\Forms\Tab;
+use SilverStripe\Forms\TabSet;
+use SilverStripe\Security\Permission;
+use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\AssetAdmin\Forms\UploadField;
+use SilverStripe\Forms\TextareaField;
+use SilverStripe\Versioned\Versioned;
+use SilverStripe\Core\Convert;
+use SilverStripe\View\Requirements;
+use SilverStripe\Control\Director;
+use SilverStripe\Control\Controller;
+use SilverStripe\ORM\DataObject;
+
 /**
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
@@ -29,13 +55,13 @@ class Interactive extends DataObject {
 
 	private static $has_one = array(
 		'InternalPage'		=> 'Page',
-		'Campaign'			=> 'InteractiveCampaign',
-		'Image'				=> 'Image',
+		'Campaign'			=> InteractiveCampaign::class,
+		'Image'				=> Image::class,
 	);
 
     private static $extensions = array(
-        'InteractiveLocationExtension',
-        'Heyday\\VersionedDataObjects\\VersionedDataObject',
+        InteractiveLocationExtension::class,
+        Versioned::class
     );
 
     private static $tracker_type = 'Local';
@@ -47,7 +73,7 @@ class Interactive extends DataObject {
 
         $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content', 'existing' => 'Existing content'];
         $transitions = ['show' => 'Immediate', 'fadeIn' => 'Fade In', 'slideDown' => 'Slide Down'];
-        
+
 		$fields->push(new TabSet('Root', new Tab('Main',
 			new TextField('Title', 'Title'),
 			TextField::create('TargetURL', 'Target URL')->setRightTitle('Or select a page below. NOTE: This will replace any links in the interactive\'s content! Leave both blank to use source links'),
@@ -67,7 +93,7 @@ class Interactive extends DataObject {
 
         if (Permission::check('ADMIN')) {
             $fields->addFieldToTab(
-                'Root.Main', 
+                'Root.Main',
                 DropdownField::create('TrackViews', 'Should views be tracked?', array('' => 'Default', 'yes' => 'Yes', 'no' => 'No')),
                 'CampaignID'
             );
@@ -82,15 +108,14 @@ class Interactive extends DataObject {
 
             $contentHelp = 'Any link in this content will trigger a tracking event. Select "Existing content" as the Location field to '.
                 'bind to items contained in the named element instead of entering content here';
-            
+
             $fields->addFieldsToTab('Root.Content', array(
                 LiteralField::create('ContentHelp', _t('Interactives.CONTENT_HELP', $contentHelp)),
-                new UploadField('Image'),
+                new UploadField(Image::class),
                 new TextareaField('HTMLContent')
             ));
 		}
 
-        Versioned::reading_stage('Stage');
 		return $fields;
 	}
 
@@ -160,7 +185,7 @@ class Interactive extends DataObject {
 		}
 
         $target = $this->NewWindow ? ' target="_blank"' : '';
-        
+
 		$tag = '<a ' . $class . $target .' href="'.$this->Link().'" data-intid="'.$this->ID.'">'.$inner.'</a>';
 
 		return $tag;
@@ -173,7 +198,7 @@ class Interactive extends DataObject {
      */
     public function forDisplay() {
         $content = strlen($this->HTMLContent) ? $this->HTMLContent : $this->forTemplate();
-        
+
         $data = array(
             'ID'    => $this->ID,
             'Content'   => $content,
@@ -201,7 +226,7 @@ class Interactive extends DataObject {
 	public function Link() {
         $link = Convert::raw2att($this->InternalPageID ? $this->InternalPage()->AbsoluteLink() : $this->TargetURL);
         return $link;
-        
+
 		if (self::config()->use_js_tracking) {
 			Requirements::javascript(THIRDPARTY_DIR.'/jquery/jquery.js');
 			Requirements::javascript('advertisements/javascript/interactives.js');

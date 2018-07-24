@@ -1,5 +1,17 @@
 <?php
 
+namespace Symbiote\Interactives\Extension;
+
+use Symbiote\Interactives\Model\Interactive;
+use Symbiote\Interactives\Model\InteractiveCampaign;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\CheckboxField;
+use SilverStripe\Forms\NumericField;
+use SilverStripe\Forms\GridField\GridFieldConfig_RelationEditor;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\ORM\DataExtension;
+
 /**
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/BSD-license
@@ -16,11 +28,11 @@ class InteractiveExtension extends DataExtension {
 	);
 
 	private static $many_many = array(
-		'Interactives'			=> 'Interactive',
+		'Interactives'			=> Interactive::class,
 	);
 
 	private static $has_one = array(
-		'UseCampaign'				=> 'InteractiveCampaign',
+		'UseCampaign'				=> InteractiveCampaign::class,
 	);
 
 	public function updateSettingsFields(FieldList $fields) {

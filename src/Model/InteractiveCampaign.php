@@ -1,5 +1,16 @@
 <?php
 
+namespace Symbiote\Interactives\Model;
+
+use Symbiote\Interactives\Extension\InteractiveLocationExtension;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\GridField\GridFieldDetailForm;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\ORM\Queries\SQLDelete;
+use SilverStripe\View\Requirements;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Versioned\Versioned;
+
 /**
  *
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
@@ -16,16 +27,16 @@ class InteractiveCampaign extends DataObject {
 	);
 
 	private static $has_many = array(
-		'Interactives'		=> 'Interactive',
+		'Interactives'		=> Interactive::class,
 	);
 
 	private static $has_one = array(
-		'Client'			=> 'InteractiveClient',
+		'Client'			=> InteractiveClient::class,
 	);
 
     private static $extensions = array(
-        'InteractiveLocationExtension',
-        'Heyday\\VersionedDataObjects\\VersionedDataObject',
+        InteractiveLocationExtension::class,
+        Versioned::class
     );
 
     public function getCMSFields()
@@ -45,11 +56,11 @@ class InteractiveCampaign extends DataObject {
         $df->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
 
         $grid = $fields->dataFieldByName('Interactives');
-        if ($grid) {
-            $config = $grid->getConfig();
-            $config->removeComponentsByType('GridFieldDetailForm');
-            $config->addComponent(new Heyday\VersionedDataObjects\VersionedDataObjectDetailsForm());
-        }
+        // if ($grid) {
+        //     $config = $grid->getConfig();
+        //     $config->removeComponentsByType(GridFieldDetailForm::class);
+        //     $config->addComponent(new Heyday\VersionedDataObjects\VersionedDataObjectDetailsForm());
+        // }
 
         $options = ['' => 'Default', 'Local' => "Locally", 'Google' => 'Google events'];
         $fields->replaceField('TrackIn', $df = DropdownField::create('TrackIn', 'Track interactions in', $options));
@@ -63,7 +74,7 @@ class InteractiveCampaign extends DataObject {
 
         if ($this->ResetStats) {
             foreach ($this->Interactives() as $interactive) {
-                $table = ClassInfo::baseDataClass('InteractiveImpression');
+                $table = ClassInfo::baseDataClass(InteractiveImpression::class);
                 $query = new SQLDelete($table, ['InteractiveID' => $interactive->ID]);
                 $query->execute();
             }
