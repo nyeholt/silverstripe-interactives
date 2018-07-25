@@ -17,6 +17,8 @@ use SilverStripe\Versioned\Versioned;
  * @license BSD http://silverstripe.org/BSD-license
  */
 class InteractiveCampaign extends DataObject {
+    private static $table_name = 'InteractiveCampaign';
+
 	private static $db = array(
 		'Title'				=> 'Varchar',
         'Begins'            => 'Date',

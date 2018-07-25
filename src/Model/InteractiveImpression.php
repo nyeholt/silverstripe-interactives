@@ -12,6 +12,8 @@ use SilverStripe\ORM\DataObject;
  */
 class InteractiveImpression extends DataObject
 {
+    private static $table_name = 'InteractiveImpression';
+
     private static $db = array(
         'Interaction' => 'Varchar(128)',
         'Signature' => 'Varchar(128)',

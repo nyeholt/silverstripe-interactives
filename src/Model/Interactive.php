@@ -35,6 +35,8 @@ class Interactive extends DataObject {
 
 	private static $use_js_tracking = false;
 
+    private static $table_name = 'Interactive';
+
 	private static $db = array(
 		'Title'				=> 'Varchar',
 		'TargetURL'			=> 'Varchar(255)',
@@ -94,7 +96,7 @@ class Interactive extends DataObject {
         if (Permission::check('ADMIN')) {
             $fields->addFieldToTab(
                 'Root.Main',
-                DropdownField::create('TrackViews', 'Should views be tracked?', array('' => 'Default', 'yes' => 'Yes', 'no' => 'No')),
+                DropdownField::create('TrackViews', 'Should views be tracked?', array('yes' => 'Yes', 'no' => 'No'))->setEmptyString('Default'),
                 'CampaignID'
             );
         }
