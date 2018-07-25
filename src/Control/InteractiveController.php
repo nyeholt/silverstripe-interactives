@@ -28,12 +28,20 @@ class InteractiveController extends Controller {
 		'imp',
 		'go',
 		'clk',
-	);
+    );
+
+    protected function requestedItem() {
+        $item = $this->request->requestVar('itm');
+        if (preg_match('/[a-zA-Z0-9_-]+\|\d+/i', $item)) {
+            return $item;
+        }
+    }
 
     public function trk() {
         $ids = $this->request->requestVar('ids');
         $sig = $this->request->requestVar('sig');
         $event = $this->request->requestVar('evt');
+        $item = $this->requestedItem();
         $allowed = self::config()->allowed_events;
         $trackAs = isset($allowed[$event]) ? $allowed[$event] : null;
         if ($trackAs && $ids) {
@@ -41,7 +49,11 @@ class InteractiveController extends Controller {
 			foreach ($ids as $id) {
 				$id = (int) $id;
 				if ($id) {
-					$imp = InteractiveImpression::create(['Interaction' => $trackAs, 'Signature' => $sig]);
+					$imp = InteractiveImpression::create([
+                        'Interaction' => $trackAs,
+                        'Signature' => $sig,
+                        'Item' => $item,
+                    ]);
 					$imp->InteractiveID = $id;
 					$imp->write();
 				}
@@ -56,11 +68,13 @@ class InteractiveController extends Controller {
 			return;
 		}
 		if ($this->request->requestVar('ids')) {
-			$ids = explode(',', $this->request->requestVar('ids'));
+            $ids = explode(',', $this->request->requestVar('ids'));
+
 			foreach ($ids as $id) {
 				$id = (int) $id;
 				if ($id) {
-					$imp = new InteractiveImpression;
+                    $imp = new InteractiveImpression;
+                    $imp->Item = $this->requestedItem();
 					$imp->InteractiveID = $id;
 					$imp->write();
 				}
@@ -72,7 +86,10 @@ class InteractiveController extends Controller {
 		if ($this->request->requestVar('id')) {
 			$id = (int) $this->request->requestVar('id');
 			if ($id) {
-				$imp = InteractiveImpression::create(['Interaction' => 'Click']);
+				$imp = InteractiveImpression::create([
+                    'Interaction' => 'Click',
+                    'Item' => $this->requestedItem(),
+                ]);
 				$imp->InteractiveID = $id;
 				$imp->write();
 			}
@@ -85,7 +102,10 @@ class InteractiveController extends Controller {
 		if ($id) {
 			$ad = DataObject::get_by_id(Interactive::class, $id);
 			if ($ad && $ad->exists()) {
-				$imp = InteractiveImpression::create(['Interaction' => 'Click']);
+				$imp = InteractiveImpression::create([
+                    'Interaction' => 'Click',
+                    'Item' => $this->requestedItem(),
+                ]);
 				$imp->InteractiveID = $id;
 				$imp->write();
 

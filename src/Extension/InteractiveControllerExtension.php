@@ -9,6 +9,8 @@ use SilverStripe\Core\Config\Config;
 use Symbiote\Interactives\Model\Interactive;
 use SilverStripe\Core\Extension;
 use Symbiote\Interactives\Model\InteractiveCampaign;
+use SilverStripe\Control\Director;
+use SilverStripe\ORM\DataObject;
 
 /**
  * Controller extension that binds details of the configured interactives
@@ -27,8 +29,6 @@ class InteractiveControllerExtension extends Extension
     }
 
     public function generateInteractivesFragment() {
-
-
         $url = $this->owner->getRequest()->getURL();
 
         $siteWide = InteractiveCampaign::get()->filter(['SiteWide' => 1]);
@@ -62,6 +62,13 @@ class InteractiveControllerExtension extends Extension
             );
         }
 
+        $item = '';
+        $page = Director::get_current_page();
+        if ($page) {
+            $table = DataObject::getSchema()->tableName($page->ClassName);
+            $item = $table . "," . $page->ID;
+        }
+
         $data = array(
             'endpoint'  => '',
             'trackviews'    => false,
@@ -69,6 +76,7 @@ class InteractiveControllerExtension extends Extension
             'remember'      => false,
             'campaigns'     => $items,
             'tracker'       => Config::inst()->get(Interactive::class, 'tracker_type'),
+            'item' => $item,
         );
 
         $data = json_encode($data);

@@ -27,6 +27,7 @@ class InteractiveImpression extends DataObject
         'ViewYear' => 'Int',
         'Referer' => 'Varchar',
         'RemoteIP' => 'Varchar',
+        'Item' => 'Varchar(128)',
     );
     private static $has_one = array(
         'User' => Member::class,
