@@ -32,7 +32,7 @@ class InteractiveController extends Controller {
 
     protected function requestedItem() {
         $item = $this->request->requestVar('itm');
-        if (preg_match('/[a-zA-Z0-9_-]+\|\d+/i', $item)) {
+        if (preg_match('/[a-zA-Z0-9_-]+,\d+/i', $item)) {
             return $item;
         }
     }
@@ -59,7 +59,8 @@ class InteractiveController extends Controller {
 				}
 			}
             return 1;
-		}
+        }
+
         return 0;
     }
 
