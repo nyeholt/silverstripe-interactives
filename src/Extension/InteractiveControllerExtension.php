@@ -11,6 +11,7 @@ use SilverStripe\Core\Extension;
 use Symbiote\Interactives\Model\InteractiveCampaign;
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\ArrayList;
 
 /**
  * Controller extension that binds details of the configured interactives
@@ -32,6 +33,7 @@ class InteractiveControllerExtension extends Extension
         $url = $this->owner->getRequest()->getURL();
 
         $siteWide = InteractiveCampaign::get()->filter(['SiteWide' => 1]);
+        $pageCampaigns = ArrayList::create();
 
         $page = $this->owner->data();
         if ($page instanceof Page) {
