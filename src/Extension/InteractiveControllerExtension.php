@@ -66,7 +66,7 @@ class InteractiveControllerExtension extends Extension
 
         $item = '';
         $page = Director::get_current_page();
-        if ($page) {
+        if ($page && $page->ID > 0) {
             $table = DataObject::getSchema()->tableName($page->ClassName);
             $item = $table . "," . $page->ID;
         }
