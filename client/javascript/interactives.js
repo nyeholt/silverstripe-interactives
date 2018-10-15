@@ -1,5 +1,7 @@
 
 (function ($) {
+    var loaded = false;
+
     var config = {
         remember: false,         // remember the user through requests
         trackviews: false,
@@ -81,6 +83,11 @@
     });
 
     function init_interactives() {
+        if (loaded) {
+            return;
+        }
+
+        loaded = true;
         for (var property in window.SSInteractives.config) {
             config[property] = window.SSInteractives.config[property];
         }
@@ -601,5 +608,7 @@
         }
     };
 
+    // allows for external initialisation
+    window.init_ss_interactives = init_interactives;
 
 })(jQuery);
