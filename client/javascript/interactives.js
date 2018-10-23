@@ -117,7 +117,7 @@
         }
 
         if (config.trackclicks) {
-            $(document).on('click', 'a.int-link', recordClick);
+            $(document).on('click', '.int-link', recordClick);
         }
 
         processViews();
@@ -397,7 +397,7 @@
         }
 
         holder.each(function () {
-            $(this).find('a').each(function () {
+            $(this).find('a,button').each(function () {
                 $(this).attr('data-intid', item.ID);
 
                 // see whether we have a specific target link to replace this with
