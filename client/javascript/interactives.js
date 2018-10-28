@@ -350,7 +350,7 @@
         var hidden = get_cookie('interacted');
         if (hidden && hidden.length) {
             hidden = hidden.split('|');
-            if (hidden.indexOf("" + item.ID) >= 0 && item.HideAfterInteraction) {
+            if (hidden.indexOf("" + item.ID) >= 0 && item.HideAfterInteraction != 0) {
                 return;
             }
         }
