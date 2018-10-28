@@ -4,3 +4,11 @@ Name: interactivesroutes
 SilverStripe\Control\Director:
   rules:
     int-act: Symbiote\Interactives\Control\InteractiveController
+
+---
+Name: interactives_services
+---
+SilverStripe\Core\Injector\Injector:
+  Symbiote\Interactives\Control\InteractiveController:
+    properties:
+      interactiveService: %$Symbiote\Interactives\Service\InteractiveService

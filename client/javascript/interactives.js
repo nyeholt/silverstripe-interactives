@@ -611,4 +611,22 @@
     // allows for external initialisation
     window.init_ss_interactives = init_interactives;
 
+    window.ss_interactive_lib = {
+        cookie: {
+            set: set_cookie,
+            get: get_cookie,
+            clear: clear_cookie
+        },
+        interacted: function (id) {
+            var interacted = get_cookie('interacted');
+            if (interacted && interacted.length) {
+                interacted = interacted.split('|');
+                if (interacted.indexOf("" + id) >= 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
 })(jQuery);
