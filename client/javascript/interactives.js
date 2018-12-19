@@ -120,6 +120,8 @@
             $(document).on('click', '.int-link', recordClick);
         }
 
+        $(document).trigger('ss_interactives_inited');
+
         processViews();
 
         setTimeout(reprocess, 5000);
@@ -439,6 +441,8 @@
                 target[addFunction](holder);
                 // and effect for showing
                 holder[effect]();
+
+                $(document).trigger('ss_interactive_loaded', item);
             }, timeout);
         }
     };
@@ -480,6 +484,11 @@
             uid = get_cookie('uuid');
         }
 
+        // anything explicitly set in the config is used
+        if (SSInteractives.uuid) {
+            uid = SSInteractives.uuid;
+        }
+
         // check the URL string
         if (!uid) {
             uid = url_uuid();
@@ -487,7 +496,9 @@
 
         if (!uid) {
             uid = UUID().generate();
-            set_cookie('uuid', uid);
+            if (config.remember) {
+                set_cookie('uuid', uid);
+            }
         }
 
         uuid = uid;
@@ -616,6 +627,9 @@
             set: set_cookie,
             get: get_cookie,
             clear: clear_cookie
+        },
+        uuid: function () {
+            return current_uuid();
         },
         interacted: function (id) {
             var interacted = get_cookie('interacted');

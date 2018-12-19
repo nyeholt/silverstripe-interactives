@@ -59,7 +59,7 @@ class InteractiveClient extends DataObject
         return $fields;
     }
 
-    protected function generateUuid()
+    public function generateUuid()
     {
         return sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
