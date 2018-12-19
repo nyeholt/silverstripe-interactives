@@ -1,5 +1,7 @@
 
 (function ($) {
+    var loaded = false;
+
     var config = {
         remember: false,         // remember the user through requests
         trackviews: false,
@@ -81,6 +83,11 @@
     });
 
     function init_interactives() {
+        if (loaded) {
+            return;
+        }
+
+        loaded = true;
         for (var property in window.SSInteractives.config) {
             config[property] = window.SSInteractives.config[property];
         }
@@ -110,8 +117,10 @@
         }
 
         if (config.trackclicks) {
-            $(document).on('click', 'a.int-link', recordClick);
+            $(document).on('click', '.int-link', recordClick);
         }
+
+        $(document).trigger('ss_interactives_inited');
 
         processViews();
 
@@ -343,7 +352,7 @@
         var hidden = get_cookie('interacted');
         if (hidden && hidden.length) {
             hidden = hidden.split('|');
-            if (hidden.indexOf("" + item.ID) >= 0 && item.HideAfterInteraction) {
+            if (hidden.indexOf("" + item.ID) >= 0 && item.HideAfterInteraction != 0) {
                 return;
             }
         }
@@ -390,7 +399,7 @@
         }
 
         holder.each(function () {
-            $(this).find('a').each(function () {
+            $(this).find('a,button').each(function () {
                 $(this).attr('data-intid', item.ID);
 
                 // see whether we have a specific target link to replace this with
@@ -432,6 +441,8 @@
                 target[addFunction](holder);
                 // and effect for showing
                 holder[effect]();
+
+                $(document).trigger('ss_interactive_loaded', item);
             }, timeout);
         }
     };
@@ -473,6 +484,11 @@
             uid = get_cookie('uuid');
         }
 
+        // anything explicitly set in the config is used
+        if (SSInteractives.uuid) {
+            uid = SSInteractives.uuid;
+        }
+
         // check the URL string
         if (!uid) {
             uid = url_uuid();
@@ -480,7 +496,9 @@
 
         if (!uid) {
             uid = UUID().generate();
-            set_cookie('uuid', uid);
+            if (config.remember) {
+                set_cookie('uuid', uid);
+            }
         }
 
         uuid = uid;
@@ -601,5 +619,28 @@
         }
     };
 
+    // allows for external initialisation
+    window.init_ss_interactives = init_interactives;
+
+    window.ss_interactive_lib = {
+        cookie: {
+            set: set_cookie,
+            get: get_cookie,
+            clear: clear_cookie
+        },
+        uuid: function () {
+            return current_uuid();
+        },
+        interacted: function (id) {
+            var interacted = get_cookie('interacted');
+            if (interacted && interacted.length) {
+                interacted = interacted.split('|');
+                if (interacted.indexOf("" + id) >= 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 
 })(jQuery);

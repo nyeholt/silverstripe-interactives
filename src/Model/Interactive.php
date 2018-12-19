@@ -25,6 +25,7 @@ use SilverStripe\View\Requirements;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Controller;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Core\ClassInfo;
 
 /**
  *
@@ -70,14 +71,25 @@ class Interactive extends DataObject {
 
     private static $summary_fields = array('Title', 'Clicks', 'Impressions', 'Completes');
 
+    public function getTypeLabel() {
+        return "Viewed item";
+    }
+
 	public function getCMSFields() {
-		$fields = new FieldList();
+        $fields = new FieldList();
+
+        $classes = ClassInfo::subclassesFor(self::class);
+        $types = [];
+        foreach ($classes as $cls) {
+            $types[$cls] = singleton($cls)->getTypeLabel();
+        }
 
         $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content', 'existing' => 'Existing content'];
         $transitions = ['show' => 'Immediate', 'fadeIn' => 'Fade In', 'slideDown' => 'Slide Down'];
 
 		$fields->push(new TabSet('Root', new Tab('Main',
-			new TextField('Title', 'Title'),
+            new TextField('Title', 'Title'),
+            DropdownField::create('ClassName', 'Type', $types)->setRightTitle('Type of interactive'),
 			TextField::create('TargetURL', 'Target URL')->setRightTitle('Or select a page below. NOTE: This will replace any links in the interactive\'s content! Leave both blank to use source links'),
             CheckboxField::create('NewWindow', 'Open generated links in a new window'),
             new Treedropdownfield('InternalPageID', 'Internal Page Link', 'Page'),

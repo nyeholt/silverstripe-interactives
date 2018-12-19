@@ -58,11 +58,10 @@ class InteractiveCampaign extends DataObject {
         $df->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
 
         $grid = $fields->dataFieldByName('Interactives');
-        // if ($grid) {
-        //     $config = $grid->getConfig();
-        //     $config->removeComponentsByType(GridFieldDetailForm::class);
-        //     $config->addComponent(new Heyday\VersionedDataObjects\VersionedDataObjectDetailsForm());
-        // }
+        if ($grid) {
+            $config = $grid->getConfig();
+
+        }
 
         $options = ['' => 'Default', 'Local' => "Locally", 'Google' => 'Google events'];
         $fields->replaceField('TrackIn', $df = DropdownField::create('TrackIn', 'Track interactions in', $options));

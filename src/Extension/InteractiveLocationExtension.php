@@ -21,6 +21,8 @@ class InteractiveLocationExtension extends DataExtension
 {
     private static $db = array(
         'SiteWide'          => 'Boolean',
+        'IncludeUrls'       => 'MultiValueField',
+        'IncludeTypes'      => 'MultiValueField',
         'ExcludeUrls'       => 'MultiValueField',
         'ExcludeTypes'      => 'MultiValueField',
     );
@@ -36,11 +38,18 @@ class InteractiveLocationExtension extends DataExtension
         $fields->removeByName('ExcludeTypes');
         $fields->removeByName('ExcludeUrls');
 
+        $fields->removeByName('IncludeTypes');
+        $fields->removeByName('IncludeUrls');
+
         $classes = SiteTree::page_type_classes();
         $classes = array_combine($classes,$classes);
         $fields->addFieldsToTab('Root.SiteOptions', [
             CheckboxField::create('SiteWide', 'All pages in site'),
             TreeMultiselectField::create('OnPages', 'Display on pages', 'Page'),
+            ToggleCompositeField::create('InclusionRules', 'Including', [
+                MultiValueTextField::create('IncludeUrls', 'Include URLs that match'),
+                MultiValueDropdownField::create('IncludeTypes', 'Include page types', $classes)
+            ]),
             ToggleCompositeField::create('ExclusionRules', 'Excluding', [
                 MultiValueTextField::create('ExcludeUrls', 'Exluding URLs that match'),
                 MultiValueDropdownField::create('ExcludeTypes', 'Excluding page types', $classes)
@@ -55,6 +64,9 @@ class InteractiveLocationExtension extends DataExtension
      * @param string $url
      */
     public function viewableOn($url, $pageType = null) {
+        // check inclusion rules first
+
+
         $excludeUrls = $this->owner->ExcludeUrls->getValues();
 
         if ($excludeUrls && count($excludeUrls)) {
