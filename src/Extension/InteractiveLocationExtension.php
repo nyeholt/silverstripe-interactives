@@ -83,6 +83,23 @@ class InteractiveLocationExtension extends DataExtension
             return false;
         }
 
+        // if we've got include rules, we need to confirm it matches those
+        $includeUrls = $this->owner->IncludeUrls->getValues();
+
+        if ($includeUrls && count($includeUrls)) {
+            foreach ($includeUrls as $urlPattern) {
+                if (!preg_match("{" . $urlPattern . "}", $url)) {
+                    return false;
+                }
+            }
+        }
+
+        $includeTypes = $this->owner->IncludeTypes->getValues();
+
+        if ($pageType && $includeTypes && count($includeTypes) && !in_array($pageType, $excludeTypes)) {
+            return false;
+        }
+
         return true;
     }
 }

@@ -37,6 +37,10 @@ class InteractiveImpression extends DataObject
         'Interaction' => 'View',
     );
 
+    private static $indexes = [
+        'Item' => true
+    ];
+
     public function onBeforeWrite()
     {
         if (!$this->ID) {
