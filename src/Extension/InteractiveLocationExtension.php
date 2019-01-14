@@ -87,10 +87,15 @@ class InteractiveLocationExtension extends DataExtension
         $includeUrls = $this->owner->IncludeUrls->getValues();
 
         if ($includeUrls && count($includeUrls)) {
+            $match = false;
             foreach ($includeUrls as $urlPattern) {
-                if (!preg_match("{" . $urlPattern . "}", $url)) {
-                    return false;
+                if (preg_match("{" . $urlPattern . "}", $url)) {
+                    $match = true;
+                    break;
                 }
+            }
+            if (!$match) {
+                return false;
             }
         }
 
