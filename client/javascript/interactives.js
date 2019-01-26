@@ -1,5 +1,5 @@
 
-(function ($) {
+(function () {
     var loaded = false;
 
     var config = {
@@ -17,6 +17,14 @@
     var uuid = null;
 
     var allowed_add_actions = ['prepend', 'append', 'before', 'after', 'html'];
+
+    var legacy_add_mapping = {
+        'before': 'beforebegin',
+        'prepend': 'afterbegin',
+        'append': 'beforeend',
+        'after': 'afterend',
+        'html': 'html'
+    };
 
     var current_id = get_url_param('int_id');
 
@@ -66,7 +74,7 @@
 
     var Trackers = {};
 
-    $().ready(function () {
+    document.addEventListener('DOMContentLoaded', function () {
         if (!window.SSInteractives) {
             // do a timer because sometimes this lib loads before the rest of the
             // page has had a chance.
@@ -93,7 +101,11 @@
         }
 
         if (!config.endpoint) {
-            var base = $('base').attr('href');
+            var baseEl = document.querySelector('base');
+            var base = '';
+            if (baseEl) {
+                base = baseEl.getAttribute('href');
+            }
             config.endpoint = base + 'int-act/trk';
         }
 
@@ -117,10 +129,14 @@
         }
 
         if (config.trackclicks) {
-            $(document).on('click', '.int-link', recordClick);
+            document.addEventListener('click', function (e) {
+                if (e.target.matches('.int-link')) {
+                    return recordClick.call(e.target, e);
+                }
+            });
         }
 
-        $(document).trigger('ss_interactives_inited');
+        triggerEvent(document, 'ss_interactives_inited');
 
         processViews();
 
@@ -128,13 +144,13 @@
     }
 
     function recordClick(e) {
-        var target = $(this).prop("tagName").toLowerCase();
+        var target = this.tagName.toLowerCase();
         var isLink = target === 'a';
-        var navLink = $(this).attr('href');
-        var newWindow = $(this).attr('target') === '_blank';
+        var navLink = this.getAttribute('href');
+        var newWindow = this.getAttribute('target') === '_blank';
 
         // is there a specific type of click
-        var clickType = $(this).attr('data-int-type');
+        var clickType = this.getAttribute('data-int-type');
         if (!clickType) {
             clickType = 'clk';
         }
@@ -160,17 +176,16 @@
             }
         }
 
-        var adId = $(this).attr('data-intid');
+        var adId = this.getAttribute('data-intid');
         if (e.which < 3) {
             tracker.track(adId, clickType);
         }
 
-        if ($(this).hasClass('hide-on-interact')) {
+        if (this.classList.contains('hide-on-interact')) {
             var blocked = get_cookie('interacted');
             blocked += '|' + adId;
             set_cookie('interacted', blocked);
         }
-
 
         // if we're opening locally, capture the click, and
         // location.href things. This allows the analytics to
@@ -212,10 +227,10 @@
      * @returns
      */
     function processViews() {
-        var ads = $('.int-track-view');
+        var ads = document.querySelectorAll('.int-track-view');
         var ids = [];
         for (var i = 0, c = ads.length; i < c; i++) {
-            var adId = $(ads[i]).attr('data-intid');
+            var adId = ads[i].getAttribute('data-intid');
             if (recorded[adId]) {
                 continue;
             }
@@ -325,11 +340,13 @@
     function bindCompletionItem(item) {
         // bind a handler for the 'completion' element, but we don't display anything
         if (item.CompletionElement && !item.interactiveAlreadyBound) {
-            $(document).on('click', item.CompletionElement, function (e) {
-                $(this).attr('data-int-type', 'cpl');
-                $(this).attr('data-intid', item.ID);
-                return recordClick.call(this, e);
-            });
+            document.addEventListener('click', function (e) {
+                if (e.target.matches(item.CompletionElement)) {
+                    e.target.setAttribute('data-int-type', 'cpl');
+                    e.target.setAttribute('data-intid', item.ID);
+                    return recordClick.call(e.target, e);
+                }
+            })
         }
         item.interactiveAlreadyBound = true;
     }
@@ -346,7 +363,7 @@
     function addInteractiveItem(item) {
         var target;
         var addFunction = '';
-        var holder = null;
+        var holder = [];
 
         var effect = 'show';
 
@@ -371,15 +388,18 @@
             // this way we can skip them later on if we find the element again
             add_later['item-' + item.ID] = item;
 
-            target = $(item.Element).filter(function () {
-                return !$(this).hasClass('ss-int-tgt');
-            });
+            target = [].slice.call(document.querySelectorAll(item.Element));
+            if (target) {
+                target = target.filter(function (elem) {
+                    return !elem.classList.contains('ss-int-tgt');
+                });
+            }
 
             if (!target.length) {
                 return;
             }
-            target.each(function () {
-                $(this).addClass('ss-int-tgt');
+            target.forEach(function (elem) {
+                elem.classList.add('ss-int-tgt');
             });
         }
 
@@ -393,44 +413,50 @@
         }
 
         if (addFunction.length) {
-            holder = $('<div class="ss-interactive-item">').hide().append(item.Content);
+            var holderElem = document.createElement('div');
+            holderElem.classList.add('ss-interactive-item');
+            holderElem.style.display = 'none';
+            holderElem.innerHTML = item.Content;
+            holder = [holderElem];
         } else {
             holder = target;
-            holder.addClass('ss-interactive-item');
+            holder.forEach(function (item) {
+                item.classList.add('ss-interactive-item');
+            })
         }
 
-        holder.each(function () {
-            $(this).find('a,button').each(function () {
-                $(this).attr('data-intid', item.ID);
+        holder.forEach(function (elem) {
+            elem.querySelectorAll('a,button').forEach(function (innerElem) {
+                innerElem.setAttribute('data-intid', item.ID);
 
                 // see whether we have a specific target link to replace this with
                 if (item.TargetLink && item.TargetLink.length > 0) {
-                    $(this).attr('href', item.TargetLink);
+                    innerElem.setAttribute('href', item.TargetLink);
                 }
 
-                $(this).addClass('int-link');
+                innerElem.classList.add('int-link');
 
                 // if there's a completion element identified, we pass on the information about
                 // this item in the link
                 if (item.CompletionElement) {
                     var append = 'int_src=' + current_uuid() + '&int_id=' + item.ID;
-                    var newLink = $(this).attr('href');
+                    var newLink = innerElem.getAttribute('href');
                     if (newLink.indexOf('?') >= 0) {
                         append = "&" + append;
                     } else {
                         append = "?" + append;
                     }
-                    $(this).attr('href', newLink + append);
+                    innerElem.setAttribute('href', newLink + append);
                 }
 
                 if (item.HideAfterInteraction) {
-                    $(this).addClass('hide-on-interact');
+                    innerElem.classList.add('hide-on-interact');
                 }
             });
 
-            $(this).attr('data-intid', item.ID)
+            elem.setAttribute('data-intid', item.ID)
             if (item.TrackViews) {
-                $(this).addClass('int-track-view');
+                elem.classList.add('int-track-view');
             }
         });
 
@@ -439,15 +465,22 @@
         if (addFunction.length) {
             setTimeout(function () {
                 // Add the item using the appropriate location
-                target[addFunction](holder);
-                // and effect for showing
-                holder[effect]();
+                // target[addFunction](holder);
 
-                var event = new CustomEvent('ss_interactive_loaded', {
-                    detail: item
+                target.forEach(function (elem) {
+                    var position = legacy_add_mapping[addFunction];
+                    holder.forEach(function (insertElem) {
+                        if (position === 'html') {
+                            elem.parentNode.replaceChild(insertElem, elem);
+                        } else {
+                            elem.insertAdjacentElement(position, insertElem);
+                        }
+                        
+                        insertElem.style.display = '';
+                    })
                 });
-                document.dispatchEvent(event);
-                // $(document).trigger('ss_interactive_loaded', item);
+
+                triggerEvent(document, 'ss_interactive_loaded', item);
             }, timeout);
         }
     };
@@ -544,7 +577,26 @@
     Trackers.Local = {
         track: function (ids, event, uid) {
             var uid = current_uuid();
-            $.post(config.endpoint, { ids: ids, evt: event, sig: uid, itm: config.item });
+            var xhr = new XMLHttpRequest();
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                }
+                else if (xhr.status !== 200) {
+                    console.error("Failed posting interactive data", xrh.status);
+                }
+            };
+            var data = [];
+            data.push("ids=" + encodeURIComponent(ids));
+            data.push("evt=" + encodeURIComponent(event));
+            data.push("sig=" + encodeURIComponent(uid));
+            data.push("itm=" + encodeURIComponent(config.item));
+
+            xhr.open('POST', config.endpoint);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.send(data.join('&'));
+            
+            // $.post(config.endpoint, { ids: ids, evt: event, sig: uid, itm: config.item });
         }
     };
 
@@ -648,13 +700,25 @@
         }
     }
 
-})(jQuery);
+    function triggerEvent(context, name, properties) {
+        var param = properties ? { detail: properties } : null;
+        var event = new CustomEvent(name, param);
+        context.dispatchEvent(event);
+    }
+
+})();
 
 
 /**
  * CustomEvent polyfill
  */
 (function () {
+
+    if (!Element.prototype.matches) {
+        Element.prototype.matches = Element.prototype.msMatchesSelector ||
+            Element.prototype.webkitMatchesSelector;
+    }
+
 
     if (typeof window.CustomEvent === "function") return false;
 
