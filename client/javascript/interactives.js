@@ -38,7 +38,7 @@
 
     var tracker = {
         track: function (ids, event, uid) {
-            var idsArr = (""+ ids).split(',');
+            var idsArr = ("" + ids).split(',');
             if (idsArr.length <= 0) {
                 return;
             }
@@ -112,7 +112,7 @@
         }
 
         // record that a page was loaded because of an interaction with a previous interactive
-        if (uid &&  current_id && config.trackforward) {
+        if (uid && current_id && config.trackforward) {
             tracker.track(current_id, 'int');
         }
 
@@ -151,9 +151,9 @@
             // check whether it's an in-page hash link.
             // checks for direct #link, http://fqdn/path/?param=1# and /path?param=2#
             if (navLink.indexOf('#') === 0 ||
-                    navLink.indexOf(window.location + window.location.search + "#") === 0 ||
-                    navLink.indexOf(window.location.pathname + window.location.search + "#") === 0
-                ) {
+                navLink.indexOf(window.location + window.location.search + "#") === 0 ||
+                navLink.indexOf(window.location.pathname + window.location.search + "#") === 0
+            ) {
                 navigateClick = false;
             } else {
 
@@ -191,15 +191,16 @@
 
         // or was it a form?
         if (target === 'input') {
-            if ($(this).attr('type') === 'submit') {
+            if (this.getAttribute('type') === 'submit' && !this.classList.contains('int-submitted')) {
+                this.classList.add('int-submitted');
                 // submit the parent form
                 e.preventDefault();
-
-                var form = $(this).parents('form');
-                $(this).val('Please wait...');
-
+                // var form = $(this).parents('form');
+                this.setAttribute('value', 'Please wait...');
+                var _this = this;
+                // re-click the button now that we have our blocking class applied
                 setTimeout(function () {
-                    form.submit();
+                    _this.click();
                 }, 200);
             }
         }
@@ -323,7 +324,7 @@
      */
     function bindCompletionItem(item) {
         // bind a handler for the 'completion' element, but we don't display anything
-        if (item.CompletionElement  && !item.interactiveAlreadyBound) {
+        if (item.CompletionElement && !item.interactiveAlreadyBound) {
             $(document).on('click', item.CompletionElement, function (e) {
                 $(this).attr('data-int-type', 'cpl');
                 $(this).attr('data-intid', item.ID);
@@ -377,7 +378,7 @@
             if (!target.length) {
                 return;
             }
-            target.each(function() {
+            target.each(function () {
                 $(this).addClass('ss-int-tgt');
             });
         }
@@ -442,7 +443,11 @@
                 // and effect for showing
                 holder[effect]();
 
-                $(document).trigger('ss_interactive_loaded', item);
+                var event = new CustomEvent('ss_interactive_loaded', {
+                    detail: item
+                });
+                document.dispatchEvent(event);
+                // $(document).trigger('ss_interactive_loaded', item);
             }, timeout);
         }
     };
@@ -530,7 +535,7 @@
                         eventCategory: category,
                         eventAction: action,
                         eventLabel: label
-                      });
+                    });
                 }
             }
         }
@@ -539,7 +544,7 @@
     Trackers.Local = {
         track: function (ids, event, uid) {
             var uid = current_uuid();
-            $.post(config.endpoint, {ids: ids, evt: event, sig: uid, itm: config.item});
+            $.post(config.endpoint, { ids: ids, evt: event, sig: uid, itm: config.item });
         }
     };
 
@@ -562,9 +567,9 @@
             var d2 = Math.random() * 0xffffffff | 0;
             var d3 = Math.random() * 0xffffffff | 0;
             return lut[d0 & 0xff] + lut[d0 >> 8 & 0xff] + lut[d0 >> 16 & 0xff] + lut[d0 >> 24 & 0xff] + '-' +
-                    lut[d1 & 0xff] + lut[d1 >> 8 & 0xff] + '-' + lut[d1 >> 16 & 0x0f | 0x40] + lut[d1 >> 24 & 0xff] + '-' +
-                    lut[d2 & 0x3f | 0x80] + lut[d2 >> 8 & 0xff] + '-' + lut[d2 >> 16 & 0xff] + lut[d2 >> 24 & 0xff] +
-                    lut[d3 & 0xff] + lut[d3 >> 8 & 0xff] + lut[d3 >> 16 & 0xff] + lut[d3 >> 24 & 0xff];
+                lut[d1 & 0xff] + lut[d1 >> 8 & 0xff] + '-' + lut[d1 >> 16 & 0x0f | 0x40] + lut[d1 >> 24 & 0xff] + '-' +
+                lut[d2 & 0x3f | 0x80] + lut[d2 >> 8 & 0xff] + '-' + lut[d2 >> 16 & 0xff] + lut[d2 >> 24 & 0xff] +
+                lut[d3 & 0xff] + lut[d3 >> 8 & 0xff] + lut[d3 >> 16 & 0xff] + lut[d3 >> 24 & 0xff];
         }
         return self;
     };
@@ -606,9 +611,9 @@
 
     function get_url_param(sParam) {
         var sPageURL = decodeURIComponent(window.location.search.substring(1)),
-                sURLVariables = sPageURL.split('&'),
-                sParameterName,
-                i;
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
 
         for (i = 0; i < sURLVariables.length; i++) {
             sParameterName = sURLVariables[i].split('=');
@@ -644,3 +649,23 @@
     }
 
 })(jQuery);
+
+
+/**
+ * CustomEvent polyfill
+ */
+(function () {
+
+    if (typeof window.CustomEvent === "function") return false;
+
+    function CustomEvent(event, params) {
+        params = params || { bubbles: false, cancelable: false, detail: undefined };
+        var evt = document.createEvent('CustomEvent');
+        evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+        return evt;
+    }
+
+    CustomEvent.prototype = window.Event.prototype;
+
+    window.CustomEvent = CustomEvent;
+})();
