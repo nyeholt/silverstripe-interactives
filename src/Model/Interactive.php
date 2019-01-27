@@ -43,6 +43,8 @@ class Interactive extends DataObject {
 		'TargetURL'			=> 'Varchar(255)',
         'NewWindow'         => 'Boolean',
         'HTMLContent'       => 'HTMLText',
+        'PostInteractionContent' => 'HTMLText',
+        'SubsequentContent' => 'HTMLText',
 
         'Element'           => 'Varchar(64)',           // within which containing element will it display?
         'Location'          => 'Varchar(64)',           // where in its container element?
@@ -126,7 +128,9 @@ class Interactive extends DataObject {
             $fields->addFieldsToTab('Root.Content', array(
                 LiteralField::create('ContentHelp', _t('Interactives.CONTENT_HELP', $contentHelp)),
                 new UploadField(Image::class),
-                new TextareaField('HTMLContent')
+                new TextareaField('HTMLContent'),
+                new TextareaField('PostInteractionContent', 'Content shown immediately post interaction'),
+                new TextareaField('SubsequentContent', 'Content shown ongoing if user has interacted')
             ));
 		}
 
@@ -222,6 +226,8 @@ class Interactive extends DataObject {
             'Frequency' => $this->Frequency,
             'Delay'   => $this->Delay,
             'HideAfterInteraction'  => $this->HideAfterInteraction,
+            'PostInteractionContent' => $this->PostInteractionContent,
+            'SubsequentContent' => $this->SubsequentContent,
             'CompletionElement'       => $this->CompletionElement,
             'TrackViews'    => strlen($this->TrackViews) ? $this->TrackViews == 'yes' : self::config()->view_tracking,
         );

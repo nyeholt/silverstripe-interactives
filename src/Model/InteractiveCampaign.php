@@ -26,6 +26,7 @@ class InteractiveCampaign extends DataObject {
         'ResetStats'        => 'Boolean',
         'DisplayType'       => 'Varchar(64)',
         'TrackIn'           => 'Varchar(64)',
+        'AllowedHosts'      => 'MultiValueField',
 	);
 
 	private static $has_many = array(

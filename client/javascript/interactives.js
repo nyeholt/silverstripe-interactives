@@ -129,11 +129,12 @@
         }
 
         if (config.trackclicks) {
-            document.addEventListener('click', function (e) {
+            // see https://gomakethings.com/you-should-always-attach-your-vanilla-js-click-events-to-the-window/
+            document.documentElement.addEventListener('click', function (e) {
                 if (e.target.matches('.int-submitted')) {
                     return;
                 }
-                if (e.target.matches('.int-link') && e.which == 1) {
+                if (e.target.matches('.int-link')) {
                     return recordClick.call(e.target, e);
                 }
             });
@@ -208,8 +209,10 @@
         }
 
         // or was it a form?
-        if (target === 'input') {
-            if (this.getAttribute('type') === 'submit' && !this.classList.contains('int-submitted')) {
+        if (target === 'input' || target === 'button') {
+            if ((this.getAttribute('type') === 'submit' || target === 'button') &&
+                !this.classList.contains('int-submitted')) {
+
                 this.classList.add('int-submitted');
                 // submit the parent form
                 e.preventDefault();
@@ -344,7 +347,7 @@
     function bindCompletionItem(item) {
         // bind a handler for the 'completion' element, but we don't display anything
         if (item.CompletionElement && !item.interactiveAlreadyBound) {
-            document.addEventListener('click', function (e) {
+            document.documentElement.addEventListener('click', function (e) {
                 if (e.target.matches(item.CompletionElement)) {
                     e.target.setAttribute('data-int-type', 'cpl');
                     e.target.setAttribute('data-intid', item.ID);
@@ -479,7 +482,7 @@
                         } else {
                             elem.insertAdjacentElement(position, insertElem);
                         }
-                        
+
                         insertElem.style.display = '';
                     })
                 });
@@ -582,8 +585,8 @@
         track: function (ids, event, uid) {
             var uid = current_uuid();
             var xhr = new XMLHttpRequest();
-            
-            xhr.onload = function() {
+
+            xhr.onload = function () {
                 if (xhr.status === 200) {
                 }
                 else if (xhr.status !== 200) {
@@ -599,7 +602,7 @@
             xhr.open('POST', config.endpoint);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.send(data.join('&'));
-            
+
             // $.post(config.endpoint, { ids: ids, evt: event, sig: uid, itm: config.item });
         }
     };
