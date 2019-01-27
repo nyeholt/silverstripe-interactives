@@ -130,7 +130,10 @@
 
         if (config.trackclicks) {
             document.addEventListener('click', function (e) {
-                if (e.target.matches('.int-link')) {
+                if (e.target.matches('.int-submitted')) {
+                    return;
+                }
+                if (e.target.matches('.int-link') && e.which == 1) {
                     return recordClick.call(e.target, e);
                 }
             });
@@ -211,6 +214,7 @@
                 // submit the parent form
                 e.preventDefault();
                 // var form = $(this).parents('form');
+                this.setAttribute('data-original-value', this.value);
                 this.setAttribute('value', 'Please wait...');
                 var _this = this;
                 // re-click the button now that we have our blocking class applied
