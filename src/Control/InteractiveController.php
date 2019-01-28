@@ -6,6 +6,8 @@ use Symbiote\Interactives\Model\Interactive;
 use Symbiote\Interactives\Model\InteractiveImpression;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Control\Controller;
+use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Control\HTTPRequest;
 
 
 /**
@@ -32,11 +34,35 @@ class InteractiveController extends Controller
         'clk',
     );
 
+    private static $cors = [
+        'Access-Control-Allow-Origin' => '*',
+        'Access-Control-Allow-Headers' => 'Authorization, Content-Type, x-requested-with',
+        'Access-Control-Allow-Methods' => 'GET,POST,PUT,DELETE',
+    ];
 
     /**
      * @var  \Symbiote\Interactives\Service\InteractiveService
      */
     public $interactiveService;
+
+    public function handleRequest(HTTPRequest $request)
+    {
+        if (strtolower($request->httpMethod()) === 'options') {
+            $response = new HTTPResponse('');
+            return $this->addCorsHeaders($response);
+        }
+        return $this->addCorsHeaders(parent::handleRequest($request));
+    }
+
+    protected function addCorsHeaders(HTTPResponse $response)
+    {
+        if (count($this->config()->cors)) {
+            foreach ($this->config()->cors as $header => $val) {
+                $response->addHeader($header, $val);
+            }
+        }
+        return $response;
+    }
 
     protected function requestedItem()
     {

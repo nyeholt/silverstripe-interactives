@@ -94,7 +94,7 @@ class InteractiveControllerExtension extends Extension
         }
 
         $data = array(
-            'endpoint' => '',
+            'endpoint' => Director::absoluteBaseURL().'int-act/trk',
             'trackviews' => false,
             'trackclicks' => true,
             'remember' => false,
