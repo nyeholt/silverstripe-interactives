@@ -478,7 +478,8 @@
                     var position = legacy_add_mapping[addFunction];
                     holder.forEach(function (insertElem) {
                         if (position === 'html') {
-                            elem.parentNode.replaceChild(insertElem, elem);
+                            elem.innerHTML = '';
+                            elem.appendChild(insertElem);
                         } else {
                             elem.insertAdjacentElement(position, insertElem);
                         }
