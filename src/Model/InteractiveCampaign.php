@@ -16,26 +16,27 @@ use SilverStripe\Versioned\Versioned;
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/BSD-license
  */
-class InteractiveCampaign extends DataObject {
+class InteractiveCampaign extends DataObject
+{
     private static $table_name = 'InteractiveCampaign';
 
-	private static $db = array(
-		'Title'				=> 'Varchar',
-        'Begins'            => 'Date',
-		'Expires'			=> 'Date',
-        'ResetStats'        => 'Boolean',
-        'DisplayType'       => 'Varchar(64)',
-        'TrackIn'           => 'Varchar(64)',
-        'AllowedHosts'      => 'MultiValueField',
-	);
+    private static $db = array(
+        'Title' => 'Varchar',
+        'Begins' => 'Date',
+        'Expires' => 'Date',
+        'ResetStats' => 'Boolean',
+        'DisplayType' => 'Varchar(64)',
+        'TrackIn' => 'Varchar(64)',
+        'AllowedHosts' => 'MultiValueField',
+    );
 
-	private static $has_many = array(
-		'Interactives'		=> Interactive::class,
-	);
+    private static $has_many = array(
+        'Interactives' => Interactive::class,
+    );
 
-	private static $has_one = array(
-		'Client'			=> InteractiveClient::class,
-	);
+    private static $has_one = array(
+        'Client' => InteractiveClient::class,
+    );
 
     private static $extensions = array(
         InteractiveLocationExtension::class,
@@ -51,7 +52,7 @@ class InteractiveCampaign extends DataObject {
 
         $options = array(
             'random' => 'Always Random',
-            'stickyrandom'  => 'Sticky Random',
+            'stickyrandom' => 'Sticky Random',
             'all' => 'All',
         );
 
@@ -86,18 +87,55 @@ class InteractiveCampaign extends DataObject {
     }
 
     /**
+     * Convert for inclusion in output JSON
+     */
+    public function forJson()
+    {
+        $interactives = $this->relevantInteractives();
+        $includeUrls = $this->IncludeUrls->getValues();
+        $includeCss = $this->IncludeCssMatch->getValues();
+        $excludeUrls = $this->ExcludeUrls->getValues();
+        $excludeCss = $this->ExcludeCssMatch->getValues();
+
+        $me = array(
+            'interactives' => $interactives,
+            'display' => $this->DisplayType,
+            'id' => $this->ID,
+            'trackIn' => $this->TrackIn,
+            'siteWide' => $this->SiteWide,
+            'include' => [
+                'urls' => $includeUrls ? $includeUrls : [],
+                'css' => $includeCss ? $includeCss : [],
+            ],
+            'exclude' => [
+                'urls' => $excludeUrls ? $excludeUrls : [],
+                'css' => $excludeCss ? $excludeCss : [],
+            ],
+        );
+
+        return $me;
+    }
+
+    /**
      * Collect a list of interactives that are relevant for the passed in URL
      * and viewed page
      *
      * @param string $url
+     *      @deprecated
      * @param SiteTree $page
+     *      @deprecated
      */
-    public function relevantInteractives($url, $page = null) {
+    public function relevantInteractives($url = null, $page = null)
+    {
         $items = [];
         foreach ($this->Interactives() as $ad) {
-            if (!$ad->viewableOn($url, $page ? $page->class : null)) {
-                continue;
-            }
+            // NOTE(Marcus) 2019-01-30
+            // Disabled interactive-level hiding for now; it's not
+            // currently exposed at all
+            //
+            // if (!$ad->viewableOn($url, $page ? $page->class : null)) {
+            //     continue;
+            // }
 
             $items[] = $ad->forDisplay();
             if ($ad->ExternalCssID) {
@@ -113,25 +151,28 @@ class InteractiveCampaign extends DataObject {
      * @param type $url
      * @param type $pageType
      */
-    public function viewableOn($url, $pageType = null) {
-        $start = 0; $end = strtotime('2038-01-01');
+    public function viewableOn($url, $pageType = null)
+    {
+        $start = 0;
+        $end = strtotime('2038-01-01');
         if ($this->Begins) {
             $start = strtotime(date('Y-m-d 00:00:00', strtotime($this->Begins)));
         }
         if ($this->Expires) {
-            $end =  strtotime(date('Y-m-d 23:59:59', strtotime($this->Expires)));
+            $end = strtotime(date('Y-m-d 23:59:59', strtotime($this->Expires)));
         }
 
         return $start < time() && $end > time();
     }
 
-	public function getRandomAd() {
-		$number = $this->Interactives()->count();
-		if ($number) {
-			--$number;
-			$rand = mt_rand(0, $number);
-			$items = $this->Interactives()->toArray();
-			return $items[$rand];
-		}
-	}
+    public function getRandomAd()
+    {
+        $number = $this->Interactives()->count();
+        if ($number) {
+            --$number;
+            $rand = mt_rand(0, $number);
+            $items = $this->Interactives()->toArray();
+            return $items[$rand];
+        }
+    }
 }

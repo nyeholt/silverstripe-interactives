@@ -268,6 +268,11 @@
      * @returns
      */
     function addCampaign(campaign) {
+        if (!canShow(campaign)) {
+            console.log("Not showing ", campaign);
+            return;
+        }
+
         if (campaign.interactives.length) {
             var cookie_name = 'cmp_' + campaign.id;
             // see what type; if it's all, or just a specific ID to show
@@ -492,6 +497,45 @@
             }, timeout);
         }
     };
+
+    /**
+     * Checks display rules for whether this interactive should
+     * display or not
+     * 
+     * @param {object} campaign 
+     */
+    function canShow(campaign) {
+        var can = campaign.siteWide == 1;
+
+        // check includes and excludes
+        if (can) {
+            if (thisPageMatches(campaign.exclude)) {
+                can = false;
+            }
+        } else {
+            if (thisPageMatches(campaign.include)) {
+                can = true;
+            }
+        }
+
+        return can;
+    }
+
+    function thisPageMatches(rules) {
+        for (var i = 0; i < rules.css.length; i++) {
+            if (document.querySelector(rules.css[i])) {
+                return true;
+            }
+        }
+        for (var i = 0; i < rules.urls.length; i++) {
+            var r = new RegExp(rules.urls[i]);
+            
+            if (r.exec(location.href)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Looks up the campaign fir a given interactive item
