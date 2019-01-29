@@ -693,6 +693,7 @@
             get: get_cookie,
             clear: clear_cookie
         },
+        bindCompletionItem: bindCompletionItem,
         uuid: function () {
             return current_uuid();
         },
