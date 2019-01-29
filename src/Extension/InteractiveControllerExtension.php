@@ -50,37 +50,37 @@ class InteractiveControllerExtension extends Extension
             $url = $this->owner->getRequest()->getURL();
         }
 
-        $interactives = $client ? $client->Campaigns() : InteractiveCampaign::get();
-        $siteWide = $interactives->filter(['SiteWide' => 1]);
-        $pageCampaigns = ArrayList::create();
+        $campaigns = $client ? $client->Campaigns() : InteractiveCampaign::get();
 
-        $page = $this->owner->data();
-        if ($page instanceof Page) {
-            $pageCampaigns = $interactives->filterAny(['OnPages.ID' => $page->ID]);
-        }
-        $class = $class ? $class : ($page ? $page->class : null);
+        // $siteWide = $interactives->filter(['SiteWide' => 1]);
+        // $pageCampaigns = ArrayList::create();
 
-        $campaigns = array_merge($siteWide->toArray(), $pageCampaigns->toArray());
+        // $page = $this->owner->data();
+        // if ($page instanceof Page) {
+        //     $pageCampaigns = $interactives->filterAny(['OnPages.ID' => $page->ID]);
+        // }
+        // $class = $class ? $class : ($page ? $page->class : null);
+
+        // $campaigns = array_merge($siteWide->toArray(), $pageCampaigns->toArray());
 
         $items = [];
         foreach ($campaigns as $campaign) {
             // collect its interactives.
-            $anyViewable = $campaign->invokeWithExtensions('viewableOn', $url, $class);
-            $canView = array_reduce($anyViewable, function ($carry, $item) {
-                return $carry && $item;
-            }, true);
+            //
+            // NOTE(Marcus) 2019-01-30
+            //
+            // Note that this has moved to being performed client side
+            //
+            // $anyViewable = $campaign->invokeWithExtensions('viewableOn', $url, $class);
+            // $canView = array_reduce($anyViewable, function ($carry, $item) {
+            //     return $carry && $item;
+            // }, true);
 
-            if (!$canView) {
-                continue;
-            }
+            // if (!$canView) {
+            //     continue;
+            // }
 
-            $interactives = $campaign->relevantInteractives($url, $page);
-            $items[] = array(
-                'interactives' => $interactives,
-                'display' => $campaign->DisplayType,
-                'id' => $campaign->ID,
-                'trackIn' => $campaign->TrackIn,
-            );
+            $items[] = $campaign->forJson();
         }
 
         $item = $for ? $for : null;

@@ -23,13 +23,19 @@ class InteractiveLocationExtension extends DataExtension
         'SiteWide'          => 'Boolean',
         'IncludeUrls'       => 'MultiValueField',
         'IncludeTypes'      => 'MultiValueField',
+        'IncludeCssMatch'   => 'MultiValueField',
         'ExcludeUrls'       => 'MultiValueField',
         'ExcludeTypes'      => 'MultiValueField',
+        'ExcludeCssMatch'   => 'MultiValueField',
     );
 
     private static $many_many = array(
         'OnPages'       => SiteTree::class,
     );
+
+    private static $defaults = [
+        'SiteWide' => true,
+    ];
 
     public function updateCMSFields(FieldList $fields)
     {
@@ -37,21 +43,25 @@ class InteractiveLocationExtension extends DataExtension
         $fields->removeByName('OnPages');
         $fields->removeByName('ExcludeTypes');
         $fields->removeByName('ExcludeUrls');
+        $fields->removeByName('ExcludeCssMatch');
 
         $fields->removeByName('IncludeTypes');
         $fields->removeByName('IncludeUrls');
+        $fields->removeByName('IncludeCssMatch');
 
         $classes = SiteTree::page_type_classes();
         $classes = array_combine($classes,$classes);
         $fields->addFieldsToTab('Root.SiteOptions', [
-            CheckboxField::create('SiteWide', 'All pages in site'),
+            CheckboxField::create('SiteWide', 'All pages in site')->setRightTitle('Uncheck if using include rules; exclude rules overrule this setting'),
             TreeMultiselectField::create('OnPages', 'Display on pages', 'Page'),
             ToggleCompositeField::create('InclusionRules', 'Including', [
                 MultiValueTextField::create('IncludeUrls', 'Include URLs that match'),
+                MultiValueTextField::create('IncludeCssMatch', 'Include on pages matching these CSS rules'),
                 MultiValueDropdownField::create('IncludeTypes', 'Include page types', $classes)
             ]),
             ToggleCompositeField::create('ExclusionRules', 'Excluding', [
                 MultiValueTextField::create('ExcludeUrls', 'Exluding URLs that match'),
+                MultiValueTextField::create('ExcludeCssMatch', 'Exclude on pages matching these CSS rules'),
                 MultiValueDropdownField::create('ExcludeTypes', 'Excluding page types', $classes)
             ]),
         ]);
@@ -65,8 +75,6 @@ class InteractiveLocationExtension extends DataExtension
      */
     public function viewableOn($url, $pageType = null) {
         // check inclusion rules first
-
-
         $excludeUrls = $this->owner->ExcludeUrls->getValues();
 
         if ($excludeUrls && count($excludeUrls)) {
