@@ -75,6 +75,7 @@ class InteractiveLocationExtension extends DataExtension
      */
     public function viewableOn($url, $pageType = null) {
         // check inclusion rules first
+
         $excludeUrls = $this->owner->ExcludeUrls->getValues();
 
         if ($excludeUrls && count($excludeUrls)) {

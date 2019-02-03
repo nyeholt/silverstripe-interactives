@@ -20,8 +20,11 @@ class InteractiveClient extends DataObject
         'ContactEmail' => 'Varchar(128)',
         'ClientUuid' => 'Varchar(64)',
         'Salt' => 'Varchar(64)',
+        'PublicKey' => 'Varchar(64)',
         'ApiKey' => 'Varchar(64)',
+        'RegenerateKeys' => 'Boolean',
     );
+
 
     private static $has_many = [
         'Campaigns' => InteractiveCampaign::class,
@@ -38,13 +41,10 @@ class InteractiveClient extends DataObject
             $this->ClientUuid = $this->generateUuid();
         }
 
-        if (!$this->Salt) {
-            // $generator = new RandomGenerator();
-            // $this->Salt = substr($generator->randomToken('sha1'), 0, 50);
-        }
-
-        if (!$this->ApiKey) {
-            $details = Security::encrypt_password($this->ClientUuid);
+        if (!$this->ApiKey || $this->RegenerateKeys) {
+            $this->RegenerateKeys = false;
+            $this->PublicKey = bin2hex(random_bytes(64));
+            $details = Security::encrypt_password($this->PublicKey);
             $this->ApiKey = $details['password'];
             $this->Salt = $details['salt'];
         }
@@ -55,6 +55,7 @@ class InteractiveClient extends DataObject
         $fields = parent::getCMSFields();
         $fields->makeFieldReadonly('ClientUuid');
         $fields->makeFieldReadonly('ApiKey');
+        $fields->makeFieldReadonly('PublicKey');
         $fields->removeByName('Salt');
         return $fields;
     }
