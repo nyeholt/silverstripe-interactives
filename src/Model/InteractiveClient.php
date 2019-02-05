@@ -26,6 +26,12 @@ class InteractiveClient extends DataObject
     );
 
 
+    private static $indexes = [
+        'ClientUuid' => [
+            'type' => 'UNIQUE'
+        ]
+    ];
+
     private static $has_many = [
         'Campaigns' => InteractiveCampaign::class,
     ];
@@ -33,6 +39,7 @@ class InteractiveClient extends DataObject
     private static $extensions = [
         Versioned::class
     ];
+
 
     public function onBeforeWrite()
     {
