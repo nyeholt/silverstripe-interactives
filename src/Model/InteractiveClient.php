@@ -27,9 +27,7 @@ class InteractiveClient extends DataObject
 
 
     private static $indexes = [
-        'ClientUuid' => [
-            'type' => 'UNIQUE'
-        ]
+        'ClientUuid' => 'true',
     ];
 
     private static $has_many = [
