@@ -109,6 +109,22 @@
             config.endpoint = base + 'int-act/trk';
         }
 
+        if (!config.item) {
+            var hintElem = document.querySelector('input[name="ss_interactive_item"]');
+            var hintItem = hintElem.value;
+            // check for namespace type things
+            if (hintItem.indexOf(',') > 0) {
+                var hintCls = hintItem.split(',')[0];
+                if (hintCls.indexOf('\\') >= 0) {
+                    var simpleName = hintCls.substring(hintCls.lastIndexOf('\\'));
+                    hintItem = simpleName + ',' + hintItem.split(',')[1];
+                }
+            }
+            if (hintItem) {
+                config.item = hintItem;
+            }
+        }
+
         defaultTracker = config.tracker ? config.tracker : 'Local';
 
         // bind globally available API endpoints now
@@ -501,8 +517,8 @@
     /**
      * Checks display rules for whether this interactive should
      * display or not
-     * 
-     * @param {object} campaign 
+     *
+     * @param {object} campaign
      */
     function canShow(campaign) {
         var can = campaign.siteWide == 1;
@@ -529,7 +545,7 @@
         }
         for (var i = 0; i < rules.urls.length; i++) {
             var r = new RegExp(rules.urls[i]);
-            
+
             if (r.exec(location.href)) {
                 return true;
             }
