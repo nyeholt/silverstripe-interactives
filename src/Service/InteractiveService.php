@@ -29,7 +29,7 @@ class InteractiveService
     public function webEnabledMethods()
     {
         return [
-            'urlStats' => [
+            'interactiveStats' => [
                 'type' => 'GET',
                 'perm' => 'SYMBIOTIC_FRONTEND_USER',
             ]
