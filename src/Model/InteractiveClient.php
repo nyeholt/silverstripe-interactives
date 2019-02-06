@@ -6,6 +6,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\RandomGenerator;
 use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
+use SilverStripe\Security\Member;
 
 /**
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
@@ -32,6 +33,10 @@ class InteractiveClient extends DataObject
 
     private static $has_many = [
         'Campaigns' => InteractiveCampaign::class,
+    ];
+
+    private static $many_many = [
+        'Members' => Member::class,
     ];
 
     private static $extensions = [
@@ -91,4 +96,21 @@ class InteractiveClient extends DataObject
             mt_rand(0, 0xffff)
         );
     }
+
+    public function canView($member = null)
+    {
+        if (!$member) {
+            $member = Member::currentUser();
+        }
+
+        if (!$member) {
+            return false;
+        }
+        $has = $this->Members()->filter('ID', $member->ID);
+
+        $otherHas = $this->extendedCan('canView', $member);
+
+        return $has || $otherHas;
+    }
+
 }
