@@ -3,6 +3,10 @@
 namespace Symbiote\Interactives\Service;
 
 use Symbiote\Interactives\Model\InteractiveImpression;
+use SilverStripe\Security\Member;
+use Symbiote\Interactives\Model\InteractiveClient;
+use Symbiote\Interactives\Model\Interactive;
+use Symbiote\Interactives\Model\InteractiveCampaign;
 
 
 /**
@@ -22,7 +26,19 @@ class InteractiveService
         'cpl' => 'Complete',
     );
 
-    protected function requestedItem($item) {
+    public function webEnabledMethods()
+    {
+        return [
+            'urlStats' => [
+                'type' => 'GET',
+                'perm' => 'SYMBIOTIC_FRONTEND_USER',
+            ]
+        ];
+    }
+
+
+    protected function requestedItem($item)
+    {
         if (preg_match('/[a-zA-Z0-9_-]+,\d+/i', $item)) {
             return $item;
         }
@@ -62,5 +78,38 @@ class InteractiveService
         }
 
         return false;
+    }
+
+    /**
+     * Retrieve statistics for a given url
+     */
+    public function interactiveStats($item, $filterSet = [])
+    {
+        $member = Member::currentUser();
+        if (!$member) {
+            return [];
+        }
+
+        // get the clients this member has access to.
+        $clients = InteractiveClient::get()->filter([
+            'Members.ID' => $member->ID,
+        ]);
+
+        $interactives = Interactive::get()->filter([
+            'Campaign.ClientID' => $clients->column()
+        ]);
+        $interactiveIds = $interactives->column();
+
+        $results = [];
+        $itemInfo = InteractiveImpression::get()->filter([
+            'InteractiveID' => $interactiveIds,
+            'Item'  => $item,
+        ]);
+
+        foreach ($filterSet as $name => $filter) {
+            $results[$name] = $itemInfo->filter($filter)->count();
+        }
+
+        return $results;
     }
 }

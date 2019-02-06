@@ -38,7 +38,8 @@ class InteractiveImpression extends DataObject
     );
 
     private static $indexes = [
-        'Item' => true
+        'Item' => true,
+        'Interaction' => true,
     ];
 
     public function onBeforeWrite()
