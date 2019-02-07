@@ -117,7 +117,7 @@
                 if (hintItem.indexOf(',') > 0) {
                     var hintCls = hintItem.split(',')[0];
                     if (hintCls.indexOf('\\') >= 0) {
-                        var simpleName = hintCls.substring(hintCls.lastIndexOf('\\'));
+                        var simpleName = hintCls.substring(hintCls.lastIndexOf('\\') + 1);
                         hintItem = simpleName + ',' + hintItem.split(',')[1];
                     }
                 }
