@@ -29,6 +29,10 @@ class InteractiveService
     public function webEnabledMethods()
     {
         return [
+            'mostViewed' => [
+                'type' => 'GET',
+                'perm' => 'SYMBIOTIC_FRONTEND_USER',
+            ],
             'interactiveStats' => [
                 'type' => 'GET',
                 'perm' => 'SYMBIOTIC_FRONTEND_USER',
@@ -80,6 +84,63 @@ class InteractiveService
         return false;
     }
 
+    public function mostViewed($number = 10, $filter = [], $age = '-10 days')
+    {
+        $number = max($number, 10);
+        $member = Member::currentUser();
+        if (!$member) {
+            return [];
+        }
+
+        $interactives = $this->memberInteractives($member);
+        if (!isset($filter['InteractiveID'])) {
+            $filter['InteractiveID'] = $interactives->column();
+        }
+
+        $list = InteractiveImpression::get()->filter($filter);
+
+        $dataQuery = $list->dataQuery();
+        $query = $dataQuery->getFinalisedQuery();
+
+        $out = $query
+            ->aggregate('COUNT("ID")', 'NumViews')
+            ->addSelect("Item")
+            // ->addWhere('"Item" NOT LIKE \'Home%\'')
+            ->setOrderBy('"NumViews" DESC')
+            ->addGroupBy(['Item'])
+            // need to do twice the number here, because the limit
+            // gets applied before the group because SilverStripe or something. Sigh
+            ->setLimit($number * 2)
+            ->execute();
+
+        $objects = [];
+        foreach ($out as $row) {
+            if (!$row['Item'] || !strpos($row['Item'], ',')) {
+                continue;
+            }
+            list($table, $id) = explode(',', $row['Item']);
+            $object = new \stdClass;
+            $object->Item = $row['Item'];
+            $object->NumViews = $row['NumViews'];
+            $objects[] = $object;
+        }
+        return $objects;
+    }
+
+    protected function memberInteractives($member)
+    {
+        // get the clients this member has access to.
+        $clients = InteractiveClient::get()->filter([
+            'Members.ID' => $member->ID,
+        ]);
+
+        $interactives = Interactive::get()->filter([
+            'Campaign.ClientID' => $clients->column()
+        ]);
+
+        return $interactives;
+    }
+
     /**
      * Retrieve statistics for a given url
      */
@@ -90,20 +151,13 @@ class InteractiveService
             return [];
         }
 
-        // get the clients this member has access to.
-        $clients = InteractiveClient::get()->filter([
-            'Members.ID' => $member->ID,
-        ]);
-
-        $interactives = Interactive::get()->filter([
-            'Campaign.ClientID' => $clients->column()
-        ]);
+        $interactives = $this->memberInteractives($member);
         $interactiveIds = $interactives->column();
 
         $results = [];
         $itemInfo = InteractiveImpression::get()->filter([
             'InteractiveID' => $interactiveIds,
-            'Item'  => $item,
+            'Item' => $item,
         ]);
 
         foreach ($filterSet as $name => $filter) {

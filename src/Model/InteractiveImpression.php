@@ -40,6 +40,7 @@ class InteractiveImpression extends DataObject
     private static $indexes = [
         'Item' => true,
         'Interaction' => true,
+        'Referer'   => true,
     ];
 
     public function onBeforeWrite()
