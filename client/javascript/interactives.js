@@ -111,17 +111,19 @@
 
         if (!config.item) {
             var hintElem = document.querySelector('input[name="ss_interactive_item"]');
-            var hintItem = hintElem.value;
-            // check for namespace type things
-            if (hintItem.indexOf(',') > 0) {
-                var hintCls = hintItem.split(',')[0];
-                if (hintCls.indexOf('\\') >= 0) {
-                    var simpleName = hintCls.substring(hintCls.lastIndexOf('\\'));
-                    hintItem = simpleName + ',' + hintItem.split(',')[1];
+            if (hintElem) {
+                var hintItem = hintElem.value;
+                // check for namespace type things
+                if (hintItem.indexOf(',') > 0) {
+                    var hintCls = hintItem.split(',')[0];
+                    if (hintCls.indexOf('\\') >= 0) {
+                        var simpleName = hintCls.substring(hintCls.lastIndexOf('\\'));
+                        hintItem = simpleName + ',' + hintItem.split(',')[1];
+                    }
                 }
-            }
-            if (hintItem) {
-                config.item = hintItem;
+                if (hintItem) {
+                    config.item = hintItem;
+                }
             }
         }
 
