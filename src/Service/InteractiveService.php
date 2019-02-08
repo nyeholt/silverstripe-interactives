@@ -92,8 +92,8 @@ class InteractiveService
             return [];
         }
 
-        $interactives = $this->memberInteractives($member);
         if (!isset($filter['InteractiveID'])) {
+            $interactives = $this->memberInteractives($member);
             $filter['InteractiveID'] = $interactives->column();
         }
 
@@ -105,11 +105,11 @@ class InteractiveService
         $out = $query
             ->aggregate('COUNT("ID")', 'NumViews')
             ->addSelect("Item")
-            // ->addWhere('"Item" NOT LIKE \'Home%\'')
+                // ->addWhere('"Item" NOT LIKE \'Home%\'')
             ->setOrderBy('"NumViews" DESC')
             ->addGroupBy(['Item'])
-            // need to do twice the number here, because the limit
-            // gets applied before the group because SilverStripe or something. Sigh
+                // need to do twice the number here, because the limit
+                // gets applied before the group because SilverStripe or something. Sigh
             ->setLimit($number * 2)
             ->execute();
 
@@ -125,6 +125,7 @@ class InteractiveService
             $objects[] = $object;
         }
         return $objects;
+
     }
 
     protected function memberInteractives($member)
