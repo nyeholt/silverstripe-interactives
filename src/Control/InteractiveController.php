@@ -78,7 +78,8 @@ class InteractiveController extends Controller
             $this->request->requestVar('evt'),
             $this->request->requestVar('ids'),
             $this->request->requestVar('sig'),
-            $this->request->requestVar('itm')
+            $this->request->requestVar('itm'),
+            $this->request->requestVar('lbl')
         );
     }
 
@@ -102,7 +103,8 @@ class InteractiveController extends Controller
                 'clk',
                 $this->request->requestVar('ids'),
                 $this->request->requestVar('sig'),
-                $this->request->requestVar('itm')
+                $this->request->requestVar('itm'),
+                $this->request->requestVar('lbl')
             );
         }
     }

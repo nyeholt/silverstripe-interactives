@@ -45,7 +45,7 @@
     var defaultTracker = '';
 
     var tracker = {
-        track: function (ids, event, uid) {
+        track: function (ids, event, uid, label) {
             var idsArr = ("" + ids).split(',');
             if (idsArr.length <= 0) {
                 return;
@@ -63,7 +63,7 @@
 
 
             if (trackFn) {
-                trackFn(ids, event, uid);
+                trackFn(ids, event, uid, label);
             } else {
                 if (window.console && window.console.log) {
                     console.log("Failed to find interactives endpoints");
@@ -149,11 +149,13 @@
         if (config.trackclicks) {
             // see https://gomakethings.com/you-should-always-attach-your-vanilla-js-click-events-to-the-window/
             document.documentElement.addEventListener('click', function (e) {
-                if (e.target.matches('.int-submitted')) {
+                var context = findClickContext(e.target);
+
+                if (context.matches('.int-submitted')) {
                     return;
                 }
-                if (e.target.matches('.int-link')) {
-                    return recordClick.call(e.target, e);
+                if (context.matches('.int-link')) {
+                    return recordClick.call(context, e);
                 }
             });
         }
@@ -163,6 +165,23 @@
         processViews();
 
         setTimeout(reprocess, 5000);
+    }
+
+    /**
+     * A click event might be on a child element of the link itself so 
+     * we look up a couple elements to find it
+     * 
+     * @param {HTMLClickEvent} eventTarget 
+     */
+    function findClickContext(eventTarget) {
+        var i = 0;
+        while (i < 3) {
+            if (eventTarget.classList.contains('int-link') || eventTarget.classList.contains('int-submitted')) {
+                return eventTarget;
+            }
+            eventTarget = eventTarget.parentNode;
+        }
+        return null;
     }
 
     function recordClick(e) {
@@ -176,6 +195,8 @@
         if (!clickType) {
             clickType = 'clk';
         }
+
+        var label = this.getAttribute('data-int-label');
 
         // was it directly clicked, or clicked into a new tab?
         // if it was middleclicked, we still want to record, but we don't
@@ -200,7 +221,7 @@
 
         var adId = this.getAttribute('data-intid');
         if (e.which < 3) {
-            tracker.track(adId, clickType);
+            tracker.track(adId, clickType, null, label);
         }
 
         if (this.classList.contains('hide-on-interact')) {
@@ -264,7 +285,7 @@
         }
 
         if (ids.length) {
-            tracker.track(ids.join(','), 'imp');
+            tracker.track(ids.join(','), 'imp', null);
         }
     }
 
@@ -458,6 +479,9 @@
         holder.forEach(function (elem) {
             elem.querySelectorAll('a,button').forEach(function (innerElem) {
                 innerElem.setAttribute('data-intid', item.ID);
+                if (item.Label) {
+                    innerElem.setAttribute('data-int-label', item.Label);
+                }
 
                 // see whether we have a specific target link to replace this with
                 if (item.TargetLink && item.TargetLink.length > 0) {
@@ -620,7 +644,7 @@
 
 
     Trackers.Google = {
-        track: function (ids, event, uid) {
+        track: function (ids, event, uid, label) {
             var category = 'Interactives';
 
             var uid = uid ? uid : current_uuid();
@@ -645,7 +669,7 @@
     };
 
     Trackers.Local = {
-        track: function (ids, event, uid) {
+        track: function (ids, event, uid, label) {
             var uid = current_uuid();
             var xhr = new XMLHttpRequest();
 
@@ -661,6 +685,9 @@
             data.push("evt=" + encodeURIComponent(event));
             data.push("sig=" + encodeURIComponent(uid));
             data.push("itm=" + encodeURIComponent(config.item));
+            if (label) {
+                data.push('lbl=' + encodeURIComponent(label));
+            }
 
             xhr.open('POST', config.endpoint);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');

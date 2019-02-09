@@ -43,6 +43,7 @@ class Interactive extends DataObject {
 		'TargetURL'			=> 'Varchar(255)',
         'NewWindow'         => 'Boolean',
         'HTMLContent'       => 'HTMLText',
+        'Label'             => 'Varchar(64)',
         'PostInteractionContent' => 'HTMLText',
         'SubsequentContent' => 'HTMLText',
 
@@ -62,7 +63,11 @@ class Interactive extends DataObject {
 		'InternalPage'		=> 'Page',
 		'Campaign'			=> InteractiveCampaign::class,
 		'Image'				=> Image::class,
-	);
+    );
+
+    private static $owns = [
+        'Image',
+    ];
 
     private static $extensions = array(
         InteractiveLocationExtension::class,
@@ -97,6 +102,7 @@ class Interactive extends DataObject {
             new Treedropdownfield('InternalPageID', 'Internal Page Link', 'Page'),
             TextField::create('Element', 'Relative Element')->setRightTitle('CSS selector for element to appear with'),
             DropdownField::create('Location', 'Location in / near element', $locations)->setRightTitle('"Use existing" to bind to existing content'),
+            TextField::create('Label', 'Label')->setRightTitle('A label to give the click event, if relevant'),
             NumericField::create('Frequency', 'Display frequency')->setRightTitle('1 in N number of people will see this'),
             NumericField::create('Delay', 'Delay display (milliseconds)'),
             DropdownField::create('Transition', 'What display effect should be used?', $transitions),
@@ -127,7 +133,7 @@ class Interactive extends DataObject {
 
             $fields->addFieldsToTab('Root.Content', array(
                 LiteralField::create('ContentHelp', _t('Interactives.CONTENT_HELP', $contentHelp)),
-                new UploadField(Image::class),
+                new UploadField('Image'),
                 new TextareaField('HTMLContent'),
                 new TextareaField('PostInteractionContent', 'Content shown immediately post interaction'),
                 new TextareaField('SubsequentContent', 'Content shown ongoing if user has interacted')
@@ -221,6 +227,7 @@ class Interactive extends DataObject {
             'ID'    => $this->ID,
             'Content'   => $content,
             'Element' => $this->Element,
+            'Label' => $this->Label,
             'Location'  => $this->Location,
             'Transition'    => $this->Transition,
             'Frequency' => $this->Frequency,

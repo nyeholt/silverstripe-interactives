@@ -60,7 +60,7 @@ class InteractiveService
      * @param string $item
      *      A String,Int mapping to an object that was the source of the event
      */
-    public function track($event, $ids, $sig = null, $item = null)
+    public function track($event, $ids, $sig = null, $item = null, $label = null)
     {
         $trackAs = isset($this->allowedEvents[$event]) ? $this->allowedEvents[$event] : null;
 
@@ -73,6 +73,7 @@ class InteractiveService
                         'Interaction' => $trackAs,
                         'Signature' => $sig,
                         'Item' => $item,
+                        'Label' => $label,
                     ]);
                     $imp->InteractiveID = $id;
                     $imp->write();

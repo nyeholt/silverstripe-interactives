@@ -28,6 +28,7 @@ class InteractiveImpression extends DataObject
         'Referer' => 'Varchar',
         'RemoteIP' => 'Varchar',
         'Item' => 'Varchar(128)',
+        'Label' => 'Varchar(64)',
     );
     private static $has_one = array(
         'User' => Member::class,
@@ -41,6 +42,7 @@ class InteractiveImpression extends DataObject
         'Item' => true,
         'Interaction' => true,
         'Referer'   => true,
+        'Label' => true,
     ];
 
     public function onBeforeWrite()
