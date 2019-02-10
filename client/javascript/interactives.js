@@ -150,6 +150,9 @@
             // see https://gomakethings.com/you-should-always-attach-your-vanilla-js-click-events-to-the-window/
             document.documentElement.addEventListener('click', function (e) {
                 var context = findClickContext(e.target);
+                if (!context) {
+                    return;
+                }
 
                 if (context.matches('.int-submitted')) {
                     return;
@@ -168,16 +171,18 @@
     }
 
     /**
-     * A click event might be on a child element of the link itself so 
+     * A click event might be on a child element of the link itself so
      * we look up a couple elements to find it
-     * 
-     * @param {HTMLClickEvent} eventTarget 
+     *
+     * @param {HTMLClickEvent} eventTarget
      */
     function findClickContext(eventTarget) {
         var i = 0;
-        while (i < 3) {
-            if (eventTarget.classList.contains('int-link') || eventTarget.classList.contains('int-submitted')) {
-                return eventTarget;
+        while (i < 3 && eventTarget) {
+            if (eventTarget.classList) {
+                if (eventTarget.classList.contains('int-link') || eventTarget.classList.contains('int-submitted')) {
+                    return eventTarget;
+                }
             }
             eventTarget = eventTarget.parentNode;
         }
@@ -308,7 +313,6 @@
      */
     function addCampaign(campaign) {
         if (!canShow(campaign)) {
-            console.log("Not showing ", campaign);
             return;
         }
 
