@@ -53,7 +53,7 @@ class InteractiveClient extends DataObject
 
         if (!$this->ApiKey || $this->RegenerateKeys) {
             $this->RegenerateKeys = false;
-            $this->PublicKey = bin2hex(random_bytes(64));
+            $this->PublicKey = bin2hex(random_bytes(32));
             $details = Security::encrypt_password($this->PublicKey);
             $this->ApiKey = $details['password'];
             $this->Salt = $details['salt'];
