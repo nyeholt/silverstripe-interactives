@@ -52,17 +52,6 @@ class InteractiveControllerExtension extends Extension
 
         $campaigns = $client ? $client->Campaigns() : InteractiveCampaign::get();
 
-        // $siteWide = $interactives->filter(['SiteWide' => 1]);
-        // $pageCampaigns = ArrayList::create();
-
-        // $page = $this->owner->data();
-        // if ($page instanceof Page) {
-        //     $pageCampaigns = $interactives->filterAny(['OnPages.ID' => $page->ID]);
-        // }
-        // $class = $class ? $class : ($page ? $page->class : null);
-
-        // $campaigns = array_merge($siteWide->toArray(), $pageCampaigns->toArray());
-
         $items = [];
         foreach ($campaigns as $campaign) {
             // collect its interactives.
