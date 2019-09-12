@@ -2,6 +2,7 @@
 
 namespace Symbiote\Interactives\Model;
 
+use ArrayObject;
 use SilverStripe\Forms\TreeDropdownField;
 
 use Symbiote\Interactives\Model\InteractiveCampaign;
@@ -130,6 +131,8 @@ class Interactive extends DataObject {
             ));
 		}
 
+        $this->extend('updateCMSFields', $fields);
+
 		return $fields;
 	}
 
@@ -230,7 +233,10 @@ class Interactive extends DataObject {
         if (strlen($target)) {
             $data['TargetLink'] = $target;
         }
-        return $data;
+
+        $update = new ArrayObject($data);
+        $this->extend("updateInteractiveData", $update);
+        return $update->getArrayCopy();
     }
 
 	public function SetRatioSize($width, $height) {
