@@ -50,7 +50,7 @@ class InteractiveLocationExtension extends DataExtension
         $fields->removeByName('IncludeCssMatch');
 
         $classes = SiteTree::page_type_classes();
-        $classes = array_combine($classes,$classes);
+        $classes = array_combine($classes, $classes);
         $fields->addFieldsToTab('Root.SiteOptions', [
             CheckboxField::create('SiteWide', 'All pages in site')->setRightTitle('Uncheck if using include rules; exclude rules overrule this setting'),
             TreeMultiselectField::create('OnPages', 'Display on pages', 'Page'),
@@ -67,13 +67,37 @@ class InteractiveLocationExtension extends DataExtension
         ]);
     }
 
+    /**
+     * Bundles the rules into a structure that can be bound into JSON
+     * for page inclusion
+     */
+    public function rulesForJson()
+    {
+        $includeUrls = $this->owner->IncludeUrls->getValues();
+        $includeCss = $this->owner->IncludeCssMatch->getValues();
+        $excludeUrls = $this->owner->ExcludeUrls->getValues();
+        $excludeCss = $this->owner->ExcludeCssMatch->getValues();
+
+        return [
+            'include' => [
+                'urls' => $includeUrls ? $includeUrls : [],
+                'css' => $includeCss ? $includeCss : [],
+            ],
+            'exclude' => [
+                'urls' => $excludeUrls ? $excludeUrls : [],
+                'css' => $excludeCss ? $excludeCss : [],
+            ],
+        ];
+    }
+
 
     /**
      * Can this interactive be viewed on the given URL ?
      *
      * @param string $url
      */
-    public function viewableOn($url, $pageType = null) {
+    public function viewableOn($url, $pageType = null)
+    {
         // check inclusion rules first
 
         $excludeUrls = $this->owner->ExcludeUrls->getValues();

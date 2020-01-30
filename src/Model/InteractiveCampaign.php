@@ -92,10 +92,8 @@ class InteractiveCampaign extends DataObject
     public function forJson()
     {
         $interactives = $this->relevantInteractives();
-        $includeUrls = $this->IncludeUrls->getValues();
-        $includeCss = $this->IncludeCssMatch->getValues();
-        $excludeUrls = $this->ExcludeUrls->getValues();
-        $excludeCss = $this->ExcludeCssMatch->getValues();
+
+        $inclusionRules = $this->rulesForJson();
 
         $me = array(
             'interactives' => $interactives,
@@ -103,14 +101,8 @@ class InteractiveCampaign extends DataObject
             'id' => $this->ID,
             'trackIn' => $this->TrackIn,
             'siteWide' => $this->SiteWide,
-            'include' => [
-                'urls' => $includeUrls ? $includeUrls : [],
-                'css' => $includeCss ? $includeCss : [],
-            ],
-            'exclude' => [
-                'urls' => $excludeUrls ? $excludeUrls : [],
-                'css' => $excludeCss ? $excludeCss : [],
-            ],
+            'include' => $inclusionRules['include'],
+            'exclude' => $inclusionRules['exclude'],
         );
 
         return $me;

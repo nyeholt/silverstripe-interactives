@@ -317,6 +317,7 @@
         }
 
         if (campaign.interactives.length) {
+
             var cookie_name = 'cmp_' + campaign.id;
             // see what type; if it's all, or just a specific ID to show
             var showId = 0;
@@ -334,13 +335,17 @@
                 }
             }
 
+            var allowedInteractives = campaign.interactives.filter(function (thisInteractive) {
+                return canShow(thisInteractive) || showId == thisInteractive.ID;
+            });
+
             // now check for random / stickyrandom if needbe
             var added = false;
 
             if (!showId && campaign.display !== 'all') {
-                showIndex = Math.floor(Math.random() * (campaign.interactives.length));
+                showIndex = Math.floor(Math.random() * (allowedInteractives.length));
 
-                item = campaign.interactives[showIndex];
+                item = allowedInteractives[showIndex];
                 // if it's sticky, we need to save a cookie
                 if (campaign.display == 'stickyrandom') {
                     set_cookie(cookie_name, item.ID);
@@ -354,11 +359,10 @@
                 added = true;
             }
 
-
             // we _must_ go through all the interactives though because the item _may_ be
             // hitting an inbound request
-            for (var i = 0; i < campaign.interactives.length; i++) {
-                item = campaign.interactives[i];
+            for (var i = 0; i < allowedInteractives.length; i++) {
+                item = allowedInteractives[i];
 
                 // we _dont_ re-add an item if it's the _current target_ of a given interactive.
                 // however we _do_ check if it needs to be handled as a completion event
@@ -548,18 +552,18 @@
      * Checks display rules for whether this interactive should
      * display or not
      *
-     * @param {object} campaign
+     * @param {object} item
      */
-    function canShow(campaign) {
-        var can = campaign.siteWide == 1;
+    function canShow(item) {
+        var can = item.siteWide == 1;
 
         // check includes and excludes
         if (can) {
-            if (thisPageMatches(campaign.exclude)) {
+            if (thisPageMatches(item.exclude)) {
                 can = false;
             }
         } else {
-            if (thisPageMatches(campaign.include)) {
+            if (thisPageMatches(item.include)) {
                 can = true;
             }
         }

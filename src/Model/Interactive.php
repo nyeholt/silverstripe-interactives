@@ -226,6 +226,8 @@ class Interactive extends DataObject {
     public function forDisplay() {
         $content = strlen($this->HTMLContent) ? $this->HTMLContent : $this->forTemplate();
 
+        $inclusionRules = $this->rulesForJson();
+
         $data = array(
             'ID'    => $this->ID,
             'Content'   => $content,
@@ -240,6 +242,9 @@ class Interactive extends DataObject {
             'SubsequentContent' => $this->SubsequentContent,
             'CompletionElement'       => $this->CompletionElement,
             'TrackViews'    => strlen($this->TrackViews) ? $this->TrackViews == 'yes' : self::config()->view_tracking,
+            'siteWide' => $this->SiteWide,
+            'include' => $inclusionRules['include'],
+            'exclude' => $inclusionRules['exclude'],
         );
 
         $target = $this->Link();
