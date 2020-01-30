@@ -65,7 +65,7 @@ class InteractiveCampaign extends DataObject
 
         }
 
-        $options = ['' => 'Default', 'Local' => "Locally", 'Google' => 'Google events'];
+        $options = ['' => 'Default', 'Local' => "Locally", 'Google' => 'Google events', 'Gtm' => 'Tag Manager'];
         $fields->replaceField('TrackIn', $df = DropdownField::create('TrackIn', 'Track interactions in', $options));
 
         return $fields;

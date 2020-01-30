@@ -695,6 +695,29 @@
         }
     };
 
+    Trackers.Gtm = {
+        track: function (ids, event, uid, label) {
+            var category = 'Interactives';
+
+            var uid = uid ? uid : current_uuid();
+            var action = event;
+
+            var allIds = ids.split(',');
+
+            for (var i = 0; i < allIds.length; i++) {
+                var label = 'id:' + allIds[i] + '|uid:' + uid;
+
+                window.dataLayer = window.dataLayer || [];
+                window.dataLayer.push({
+                    'event': 'Interaction',
+                    eventCategory: category,
+                    eventAction: action,
+                    eventLabel: label
+                });
+            }
+        }
+    }
+
     Trackers.Local = {
         track: function (ids, event, uid, label) {
             var uid = current_uuid();
