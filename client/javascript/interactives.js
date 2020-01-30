@@ -445,19 +445,38 @@
         if (item.Element) {
             // we can only re-add items that have a specific 'element' being targeted,
             // this way we can skip them later on if we find the element again
+            var addingPrev = add_later['item-' + item.ID] != null;
             add_later['item-' + item.ID] = item;
 
             target = [].slice.call(document.querySelectorAll(item.Element));
+
             if (target) {
                 target = target.filter(function (elem) {
-                    return !elem.classList.contains('ss-int-tgt');
+                    var dataAttr = elem.getAttribute('data-int-tgt');
+                    if (dataAttr && dataAttr.length) {
+                        var myInteractives = dataAttr.split(",");
+                        return myInteractives.indexOf("" + item.ID) < 0;
+                    }
+                    return true;
                 });
             }
 
             if (!target.length) {
                 return;
             }
+            if (addingPrev) {
+                delete add_later['item-' + item.ID];
+            }
             target.forEach(function (elem) {
+                var dataAttr = elem.getAttribute('data-int-tgt');
+                var appliedInteractives = [item.ID];
+                if (dataAttr && dataAttr.length) {
+                    appliedInteractives = dataAttr.split(",");
+                    if (appliedInteractives.indexOf(item.ID) <= 0) {
+                        appliedInteractives.push(item.ID);
+                    }
+                }
+                elem.setAttribute('data-int-tgt', appliedInteractives.join(","));
                 elem.classList.add('ss-int-tgt');
             });
         }
