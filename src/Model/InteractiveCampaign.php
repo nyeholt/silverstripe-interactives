@@ -6,6 +6,7 @@ use Symbiote\Interactives\Extension\InteractiveLocationExtension;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\ORM\Queries\SQLDelete;
 use SilverStripe\View\Requirements;
 use SilverStripe\ORM\DataObject;
@@ -50,23 +51,28 @@ class InteractiveCampaign extends DataObject
         $reset = $fields->dataFieldByName('ResetStats');
         $fields->addFieldToTab('Root.Interactives', $reset);
 
-        $options = array(
-            'random' => 'Always Random',
-            'stickyrandom' => 'Sticky Random',
-            'all' => 'All',
-        );
+        // advanced dropdown
+        $advanced = new ToggleCompositeField('Advanced', 'Advanced', []);
+        $advanced->setStartClosed(true);
+        $fields->addFieldToTab('Root.Main', $advanced);
 
-        $fields->replaceField('DisplayType', $df = DropdownField::create('DisplayType', 'Use items as', $options));
-        $df->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
+        // display type
+        $fields->removeByName('DisplayType');
+        $options = ['random' => 'Always Random', 'stickyrandom' => 'Sticky Random', 'all' => 'All'];
+        $displayType = DropdownField::create('DisplayType', 'Use items as', $options);
+        $displayType->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
+        $advanced->push($displayType);
 
-        $grid = $fields->dataFieldByName('Interactives');
-        if ($grid) {
-            $config = $grid->getConfig();
-
-        }
-
+        // track in
+        $fields->removeByName('TrackIn');
         $options = ['' => 'Default', 'Local' => "Locally", 'Google' => 'Google events', 'Gtm' => 'Tag Manager'];
-        $fields->replaceField('TrackIn', $df = DropdownField::create('TrackIn', 'Track interactions in', $options));
+        $trackIn = DropdownField::create('TrackIn', 'Track interactions in', $options);
+        $advanced->push($trackIn);
+
+        // client
+        $fields->removeByName('ClientID');
+        $client = DropdownField::create('ClientID', 'Client', InteractiveClient::get()->map('ID', 'Title'));
+        $advanced->push($client);
 
         return $fields;
     }
