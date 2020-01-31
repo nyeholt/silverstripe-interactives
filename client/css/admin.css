@@ -1,0 +1,4 @@
+/* makes dropdown visible outside ToggleCompositeField (when fully open) */
+.ui-accordion-content-active:not([style*="height"]) {
+    overflow: visible !important;
+}
