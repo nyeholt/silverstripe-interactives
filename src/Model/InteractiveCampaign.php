@@ -4,8 +4,8 @@ namespace Symbiote\Interactives\Model;
 
 use Symbiote\Interactives\Extension\InteractiveLocationExtension;
 use SilverStripe\Forms\DropdownField;
-use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\ORM\Queries\SQLDelete;
 use SilverStripe\View\Requirements;
@@ -21,32 +21,64 @@ class InteractiveCampaign extends DataObject
 {
     private static $table_name = 'InteractiveCampaign';
 
-    private static $db = array(
+    private static $db = [
         'Title' => 'Varchar',
-        'Begins' => 'Date',
-        'Expires' => 'Date',
+        'Begins' => 'DBDatetime',
+        'Expires' => 'DBDatetime',
         'ResetStats' => 'Boolean',
         'DisplayType' => 'Varchar(64)',
         'TrackIn' => 'Varchar(64)',
         'AllowedHosts' => 'MultiValueField',
-    );
+    ];
 
-    private static $has_many = array(
+    private static $has_many = [
         'Interactives' => Interactive::class,
-    );
+    ];
 
-    private static $has_one = array(
+    private static $has_one = [
         'Client' => InteractiveClient::class,
-    );
+    ];
 
-    private static $extensions = array(
+    private static $extensions = [
         InteractiveLocationExtension::class,
         Versioned::class
-    );
+    ];
+
+    private static $datetimeFormat = 'Y-m-d H:i:00';
+
+    public function populateDefaults()
+    {
+        // begins
+        if ($begins = Config::inst()->get(self::class, 'Begins')) {
+            $this->Begins = date(static::$datetimeFormat, strtotime($begins));
+        } else {
+            $this->Begins = date(static::$datetimeFormat, strtotime('now'));
+        }
+        // expires
+        if ($expires = Config::inst()->get(self::class, 'Expires')) {
+            $this->Expires = date(static::$datetimeFormat, strtotime($expires));
+        } else {
+            // end of 30 days from now
+            $this->Expires = date(static::$datetimeFormat, strtotime('midnight + 31 days - 1 minute'));
+        }
+        // display type
+        if ($display_type = Config::inst()->get(self::class, 'DisplayType')) {
+            $this->DisplayType = $display_type;
+        }
+        // track in
+        if ($track_in = Config::inst()->get(self::class, 'TrackIn')) {
+            $this->TrackIn = $track_in;
+        }
+        parent::populateDefaults();
+    }
 
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
+
+        $dtFormat = 'Format: "dd/mm/yyyy, hh:mm"';
+        $fields->fieldByName('Root.Main.Begins')->setDescription($dtFormat);
+        $fields->fieldByName('Root.Main.Expires')->setDescription($dtFormat);
 
         $reset = $fields->dataFieldByName('ResetStats');
         $fields->addFieldToTab('Root.Interactives', $reset);
@@ -58,7 +90,7 @@ class InteractiveCampaign extends DataObject
 
         // display type
         $fields->removeByName('DisplayType');
-        $options = ['random' => 'Always Random', 'stickyrandom' => 'Sticky Random', 'all' => 'All'];
+        $options = ['all' => 'All', 'random' => 'Always Random', 'stickyrandom' => 'Sticky Random'];
         $displayType = DropdownField::create('DisplayType', 'Use items as', $options);
         $displayType->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
         $advanced->push($displayType);
