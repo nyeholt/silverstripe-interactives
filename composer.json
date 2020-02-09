@@ -1,7 +1,9 @@
 {
     "name": "symbiote/silverstripe-interactives",
     "type": "silverstripe-vendormodule",
-    "replace": "nyeholt/silverstripe-interactives",
+    "replace": {
+        "nyeholt/silverstripe-interactives": "4.3.0"
+    },
     "description": "A simple mechanism for implementing tracked interactive elements",
     "license": "BSD-3-Clause",
     "keywords": [
