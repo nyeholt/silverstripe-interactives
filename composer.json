@@ -1,26 +1,32 @@
 {
-	"name": "symbiote/silverstripe-interactives",
-	"type": "silverstripe-vendormodule",
-	"description": "A simple mechanism for implementing tracked interactive elements",
-	"license": "BSD-3-Clause",
-	"keywords": ["silverstripe", "interactives", "advertisements", "ad campaign"],
-	"homepage": "https://github.com/nyeholt/silverstripe-interactives",
-	"authors": [
-		{
-			"name": "Marcus Nyeholt",
-			"email": "marcus@symbiote.com.au"
-		}
-	],
-	"require": {
-		"silverstripe/framework": "~4.0",
-	        "symbiote/silverstripe-multivaluefield": "~5.0"
-	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "5.0.x-dev"
+    "name": "symbiote/silverstripe-interactives",
+    "type": "silverstripe-vendormodule",
+    "replace": "nyeholt/silverstripe-interactives",
+    "description": "A simple mechanism for implementing tracked interactive elements",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "silverstripe",
+        "interactives",
+        "advertisements",
+        "ad campaign"
+    ],
+    "homepage": "https://github.com/nyeholt/silverstripe-interactives",
+    "authors": [
+        {
+            "name": "Marcus Nyeholt",
+            "email": "marcus@symbiote.com.au"
+        }
+    ],
+    "require": {
+        "silverstripe/framework": "~4.0",
+        "symbiote/silverstripe-multivaluefield": "~5.0"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "5.0.x-dev"
         },
         "expose": [
             "client/javascript"
         ]
-	}
+    }
 }
