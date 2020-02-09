@@ -1,5 +1,5 @@
 {
-	"name": "nyeholt/silverstripe-interactives",
+	"name": "symbiote/silverstripe-interactives",
 	"type": "silverstripe-vendormodule",
 	"description": "A simple mechanism for implementing tracked interactive elements",
 	"license": "BSD-3-Clause",
@@ -13,11 +13,11 @@
 	],
 	"require": {
 		"silverstripe/framework": "~4.0",
-        "symbiote/silverstripe-multivaluefield": "~5.0"
+	        "symbiote/silverstripe-multivaluefield": "~5.0"
 	},
 	"extra": {
 		"branch-alias": {
-			"dev-master": "4.3.x-dev"
+			"dev-master": "5.0.x-dev"
         },
         "expose": [
             "client/javascript"

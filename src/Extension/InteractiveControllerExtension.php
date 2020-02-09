@@ -27,7 +27,7 @@ class InteractiveControllerExtension extends Extension
     public function onAfterInit()
     {
         if (Config::inst()->get(self::class, 'include_interactives_fragment')) {
-            Requirements::javascript('nyeholt/silverstripe-interactives:client/javascript/interactives.js');
+            Requirements::javascript('symbiote/silverstripe-interactives:client/javascript/interactives.js');
             $fragment = $this->generateInteractivesFragment();
             Requirements::customScript($fragment, 'ads');
         }
