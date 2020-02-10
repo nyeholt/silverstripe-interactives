@@ -27,6 +27,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\Controller;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\ToggleCompositeField;
 
 /**
@@ -40,7 +41,7 @@ class Interactive extends DataObject {
 
     private static $table_name = 'Interactive';
 
-	private static $db = array(
+	private static $db = [
 		'Title'				=> 'Varchar',
 		'TargetURL'			=> 'Varchar(255)',
         'NewWindow'         => 'Boolean',
@@ -58,27 +59,55 @@ class Interactive extends DataObject {
         'TrackViews'        => 'Varchar(16)',
 
         'CompletionElement'   => 'Varchar(64)',         // what element needs clicking to be considered a 'complete' event
+    ];
 
-	);
-
-	private static $has_one = array(
+	private static $has_one = [
 		'InternalPage'		=> 'Page',
 		'Campaign'			=> InteractiveCampaign::class,
 		'Image'				=> Image::class,
-    );
+    ];
 
     private static $owns = [
         'Image',
     ];
 
-    private static $extensions = array(
+    private static $extensions = [
         InteractiveLocationExtension::class,
         Versioned::class
-    );
+    ];
 
     private static $tracker_type = 'Local';
 
-    private static $summary_fields = array('Title', 'Clicks', 'Impressions', 'Completes');
+    private static $summary_fields = ['Title', 'Clicks', 'Impressions', 'Completes'];
+
+    public function populateDefaults()
+    {
+        // frequency
+        if ($freq = Config::inst()->get(self::class, 'Frequency')) {
+            $this->Frequency = $freq;
+        } else {
+            $this->Frequency = 1;
+        }
+        // delay
+        if ($delay = Config::inst()->get(self::class, 'Delay')) {
+            $this->Delay = $delay;
+        } else {
+            $this->Delay = 0;
+        }
+        // relative element
+        if ($rel_ele = Config::inst()->get(self::class, 'RelativeElement')) {
+            $this->Element = $rel_ele;
+        }
+        // track views
+        if ($track_view = Config::inst()->get(self::class, 'TrackViews')) {
+            $this->TrackViews = $track_view;
+        }
+        // html content
+        if ($html = Config::inst()->get(self::class, 'HTMLContent')) {
+            $this->HTMLContent = $html;
+        }
+        parent::populateDefaults();
+    }
 
     public function getTypeLabel() {
         return "Viewed item";
