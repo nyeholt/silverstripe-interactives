@@ -157,6 +157,10 @@ class InteractiveCampaign extends DataObject
      */
     public function relevantInteractives($url = null, $page = null)
     {
+        if (!$this->viewableNow()) {
+            return [];
+        }
+
         $items = [];
         foreach ($this->Interactives() as $ad) {
             // NOTE(Marcus) 2019-01-30
@@ -176,23 +180,22 @@ class InteractiveCampaign extends DataObject
     }
 
     /**
-     * Is this campaign viewable? Checks start / expires dates
-     *
-     * @param type $url
-     * @param type $pageType
+     * Is this campaign active now? Checks start / expires dates
      */
-    public function viewableOn($url, $pageType = null)
+    public function viewableNow()
     {
         $start = 0;
-        $end = strtotime('2038-01-01');
+        $end = PHP_INT_MAX;
+        $now = time();
+
         if ($this->Begins) {
-            $start = strtotime(date('Y-m-d 00:00:00', strtotime($this->Begins)));
+            $start = strtotime($this->Begins);
         }
         if ($this->Expires) {
-            $end = strtotime(date('Y-m-d 23:59:59', strtotime($this->Expires)));
+            $end = strtotime($this->Expires);
         }
 
-        return $start < time() && $end > time();
+        return $start <= $now && $end >= $now;
     }
 
     public function getRandomAd()
