@@ -69,6 +69,21 @@ class InteractiveCampaign extends DataObject
         if ($track_in = Config::inst()->get(self::class, 'TrackIn')) {
             $this->TrackIn = $track_in;
         }
+        // allowed hosts
+        if ($allowed_hosts = Config::inst()->get(self::class, 'AllowedHosts')) {
+            $vals = $this->AllowedHosts ? $this->AllowedHosts->getValue() : [];
+            $vals = $vals ? $vals : [];
+            if (is_array($allowed_hosts)) {
+                foreach ($allowed_hosts as $host) {
+                    if (!array_search($host, $vals)) {
+                        $vals[] = $host;
+                    }
+                }
+            } else if (is_string($allowed_hosts) && !array_search($allowed_hosts, $vals)) {
+                $vals[] = $allowed_hosts;
+            }
+            $this->AllowedHosts->setValue($vals);
+        }
         parent::populateDefaults();
     }
 
