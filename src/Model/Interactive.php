@@ -88,23 +88,23 @@ class Interactive extends DataObject {
     public function populateDefaults()
     {
         // frequency
-        if ($freq = Config::inst()->get(self::class, 'Frequency')) {
+        if ($freq = self::config()->Frequency) {
             $this->Frequency = $freq;
         }
         // delay
-        if ($delay = Config::inst()->get(self::class, 'Delay')) {
+        if ($delay = self::config()->Delay) {
             $this->Delay = $delay;
         }
         // relative element
-        if ($rel_ele = Config::inst()->get(self::class, 'Element')) {
+        if ($rel_ele = self::config()->Element) {
             $this->Element = $rel_ele;
         }
         // track views
-        if ($track_view = Config::inst()->get(self::class, 'TrackViews')) {
+        if ($track_view = self::config()->TrackViews) {
             $this->TrackViews = $track_view;
         }
         // html content
-        if ($html = Config::inst()->get(self::class, 'HTMLContent')) {
+        if ($html = self::config()->HTMLContent) {
             $this->HTMLContent = $html;
         }
         parent::populateDefaults();

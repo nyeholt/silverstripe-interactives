@@ -49,28 +49,28 @@ class InteractiveCampaign extends DataObject
     public function populateDefaults()
     {
         // begins
-        if ($begins = Config::inst()->get(self::class, 'Begins')) {
+        if ($begins = self::config()->Begins) {
             $this->Begins = date(static::$datetimeFormat, strtotime($begins));
         } else {
             $this->Begins = date(static::$datetimeFormat, strtotime('now'));
         }
         // expires
-        if ($expires = Config::inst()->get(self::class, 'Expires')) {
+        if ($expires = self::config()->Expires) {
             $this->Expires = date(static::$datetimeFormat, strtotime($expires));
         } else {
             // end of 30 days from now
             $this->Expires = date(static::$datetimeFormat, strtotime('midnight + 31 days - 1 minute'));
         }
         // display type
-        if ($display_type = Config::inst()->get(self::class, 'DisplayType')) {
+        if ($display_type = self::config()->DisplayType) {
             $this->DisplayType = $display_type;
         }
         // track in
-        if ($track_in = Config::inst()->get(self::class, 'TrackIn')) {
+        if ($track_in = self::config()->TrackIn) {
             $this->TrackIn = $track_in;
         }
         // allowed hosts
-        if ($allowed_hosts = Config::inst()->get(self::class, 'AllowedHosts')) {
+        if ($allowed_hosts = self::config()->AllowedHosts) {
             $vals = $this->AllowedHosts ? $this->AllowedHosts->getValue() : [];
             $vals = $vals ? $vals : [];
             if (is_array($allowed_hosts)) {
