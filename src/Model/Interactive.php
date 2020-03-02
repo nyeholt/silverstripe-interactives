@@ -76,6 +76,11 @@ class Interactive extends DataObject {
         Versioned::class
     ];
 
+    private static $defaults = [
+        'Frequency' => 1,
+        'Delay' => 0,
+    ];
+
     private static $tracker_type = 'Local';
 
     private static $summary_fields = ['Title', 'Clicks', 'Impressions', 'Completes'];
@@ -85,17 +90,13 @@ class Interactive extends DataObject {
         // frequency
         if ($freq = Config::inst()->get(self::class, 'Frequency')) {
             $this->Frequency = $freq;
-        } else {
-            $this->Frequency = 1;
         }
         // delay
         if ($delay = Config::inst()->get(self::class, 'Delay')) {
             $this->Delay = $delay;
-        } else {
-            $this->Delay = 0;
         }
         // relative element
-        if ($rel_ele = Config::inst()->get(self::class, 'RelativeElement')) {
+        if ($rel_ele = Config::inst()->get(self::class, 'Element')) {
             $this->Element = $rel_ele;
         }
         // track views
