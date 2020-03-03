@@ -4,8 +4,9 @@ namespace Symbiote\Interactives\Model;
 
 use Symbiote\Interactives\Extension\InteractiveLocationExtension;
 use SilverStripe\Forms\DropdownField;
-use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\ORM\Queries\SQLDelete;
 use SilverStripe\View\Requirements;
 use SilverStripe\ORM\DataObject;
@@ -20,28 +21,63 @@ class InteractiveCampaign extends DataObject
 {
     private static $table_name = 'InteractiveCampaign';
 
-    private static $db = array(
+    private static $db = [
         'Title' => 'Varchar',
-        'Begins' => 'Date',
-        'Expires' => 'Date',
+        'Begins' => 'DBDatetime',
+        'Expires' => 'DBDatetime',
         'ResetStats' => 'Boolean',
         'DisplayType' => 'Varchar(64)',
         'TrackIn' => 'Varchar(64)',
         'AllowedHosts' => 'MultiValueField',
-    );
+    ];
 
-    private static $has_many = array(
+    private static $has_many = [
         'Interactives' => Interactive::class,
-    );
+    ];
 
-    private static $has_one = array(
+    private static $has_one = [
         'Client' => InteractiveClient::class,
-    );
+    ];
 
-    private static $extensions = array(
+    private static $extensions = [
         InteractiveLocationExtension::class,
         Versioned::class
-    );
+    ];
+
+    private static $datetimeFormat = 'Y-m-d H:i:00';
+
+    public function populateDefaults()
+    {
+        // begins
+        if ($begins = self::config()->Begins) {
+            $this->Begins = date(static::$datetimeFormat, strtotime($begins));
+        } else {
+            $this->Begins = date(static::$datetimeFormat, strtotime('now'));
+        }
+        // expires
+        if ($expires = self::config()->Expires) {
+            $this->Expires = date(static::$datetimeFormat, strtotime($expires));
+        } else {
+            // end of 30 days from now
+            $this->Expires = date(static::$datetimeFormat, strtotime('midnight + 31 days - 1 minute'));
+        }
+        // allowed hosts
+        if ($allowed_hosts = self::config()->AllowedHosts) {
+            $vals = $this->AllowedHosts ? $this->AllowedHosts->getValue() : [];
+            $vals = $vals ? $vals : [];
+            if (is_array($allowed_hosts)) {
+                foreach ($allowed_hosts as $host) {
+                    if (!array_search($host, $vals)) {
+                        $vals[] = $host;
+                    }
+                }
+            } else if (is_string($allowed_hosts) && !array_search($allowed_hosts, $vals)) {
+                $vals[] = $allowed_hosts;
+            }
+            $this->AllowedHosts->setValue($vals);
+        }
+        parent::populateDefaults();
+    }
 
     public function getCMSFields()
     {
@@ -50,23 +86,28 @@ class InteractiveCampaign extends DataObject
         $reset = $fields->dataFieldByName('ResetStats');
         $fields->addFieldToTab('Root.Interactives', $reset);
 
-        $options = array(
-            'random' => 'Always Random',
-            'stickyrandom' => 'Sticky Random',
-            'all' => 'All',
-        );
+        // advanced dropdown
+        $advanced = new ToggleCompositeField('Advanced', 'Advanced', []);
+        $advanced->setStartClosed(true);
+        $fields->addFieldToTab('Root.Main', $advanced);
 
-        $fields->replaceField('DisplayType', $df = DropdownField::create('DisplayType', 'Use items as', $options));
-        $df->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
+        // display type
+        $fields->removeByName('DisplayType');
+        $options = ['all' => 'All', 'random' => 'Always Random', 'stickyrandom' => 'Sticky Random'];
+        $displayType = DropdownField::create('DisplayType', 'Use items as', $options);
+        $displayType->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
+        $advanced->push($displayType);
 
-        $grid = $fields->dataFieldByName('Interactives');
-        if ($grid) {
-            $config = $grid->getConfig();
-
-        }
-
+        // track in
+        $fields->removeByName('TrackIn');
         $options = ['' => 'Default', 'Local' => "Locally", 'Google' => 'Google events', 'Gtm' => 'Tag Manager'];
-        $fields->replaceField('TrackIn', $df = DropdownField::create('TrackIn', 'Track interactions in', $options));
+        $trackIn = DropdownField::create('TrackIn', 'Track interactions in', $options);
+        $advanced->push($trackIn);
+
+        // client
+        $fields->removeByName('ClientID');
+        $client = DropdownField::create('ClientID', 'Client', InteractiveClient::get()->map('ID', 'Title'));
+        $advanced->push($client);
 
         return $fields;
     }
@@ -119,6 +160,10 @@ class InteractiveCampaign extends DataObject
      */
     public function relevantInteractives($url = null, $page = null)
     {
+        if (!$this->viewableNow()) {
+            return [];
+        }
+
         $items = [];
         foreach ($this->Interactives() as $ad) {
             // NOTE(Marcus) 2019-01-30
@@ -138,23 +183,22 @@ class InteractiveCampaign extends DataObject
     }
 
     /**
-     * Is this campaign viewable? Checks start / expires dates
-     *
-     * @param type $url
-     * @param type $pageType
+     * Is this campaign active now? Checks start / expires dates
      */
-    public function viewableOn($url, $pageType = null)
+    public function viewableNow()
     {
         $start = 0;
-        $end = strtotime('2038-01-01');
+        $end = PHP_INT_MAX;
+        $now = time();
+
         if ($this->Begins) {
-            $start = strtotime(date('Y-m-d 00:00:00', strtotime($this->Begins)));
+            $start = strtotime($this->Begins);
         }
         if ($this->Expires) {
-            $end = strtotime(date('Y-m-d 23:59:59', strtotime($this->Expires)));
+            $end = strtotime($this->Expires);
         }
 
-        return $start < time() && $end > time();
+        return $start <= $now && $end >= $now;
     }
 
     public function getRandomAd()

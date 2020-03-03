@@ -28,7 +28,8 @@
             "dev-master": "5.0.x-dev"
         },
         "expose": [
-            "client/javascript"
+			"client/javascript",
+            "client/css"
         ]
     }
 }

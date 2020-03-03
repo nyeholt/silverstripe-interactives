@@ -27,6 +27,8 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\Controller;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\ToggleCompositeField;
 
 /**
  *
@@ -39,7 +41,7 @@ class Interactive extends DataObject {
 
     private static $table_name = 'Interactive';
 
-	private static $db = array(
+	private static $db = [
 		'Title'				=> 'Varchar',
 		'TargetURL'			=> 'Varchar(255)',
         'NewWindow'         => 'Boolean',
@@ -57,27 +59,31 @@ class Interactive extends DataObject {
         'TrackViews'        => 'Varchar(16)',
 
         'CompletionElement'   => 'Varchar(64)',         // what element needs clicking to be considered a 'complete' event
+    ];
 
-	);
-
-	private static $has_one = array(
+	private static $has_one = [
 		'InternalPage'		=> 'Page',
 		'Campaign'			=> InteractiveCampaign::class,
 		'Image'				=> Image::class,
-    );
+    ];
 
     private static $owns = [
         'Image',
     ];
 
-    private static $extensions = array(
+    private static $extensions = [
         InteractiveLocationExtension::class,
         Versioned::class
-    );
+    ];
+
+    private static $defaults = [
+        'Frequency' => 1,
+        'Delay' => 0,
+    ];
 
     private static $tracker_type = 'Local';
 
-    private static $summary_fields = array('Title', 'Clicks', 'Impressions', 'Completes');
+    private static $summary_fields = ['Title', 'Clicks', 'Impressions', 'Completes'];
 
     public function getTypeLabel() {
         return "Viewed item";
@@ -86,42 +92,14 @@ class Interactive extends DataObject {
 	public function getCMSFields() {
         $fields = new FieldList();
 
-        $classes = ClassInfo::subclassesFor(self::class);
-        $types = [];
-        foreach ($classes as $cls) {
-            $types[$cls] = singleton($cls)->getTypeLabel();
-        }
+        // main tab
+        $main =  new Tab('Main');
+        $fields->push(new TabSet('Root', $main));
 
-        $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content', 'existing' => 'Existing content'];
-        $transitions = ['show' => 'Immediate', 'fadeIn' => 'Fade In', 'slideDown' => 'Slide Down'];
-
-		$fields->push(new TabSet('Root', new Tab('Main',
-            new TextField('Title', 'Title'),
-            DropdownField::create('ClassName', 'Type', $types)->setRightTitle('Type of interactive'),
-			TextField::create('TargetURL', 'Target URL')->setRightTitle('Or select a page below. NOTE: This will replace any links in the interactive\'s content! Leave both blank to use source links'),
-            CheckboxField::create('NewWindow', 'Open generated links in a new window'),
-            new Treedropdownfield('InternalPageID', 'Internal Page Link', 'Page'),
-            TextField::create('Element', 'Relative Element')->setRightTitle('CSS selector for element to appear with'),
-            DropdownField::create('Location', 'Location in / near element', $locations)->setRightTitle('"Use existing" to bind to existing content'),
-            TextField::create('Label', 'Label')->setRightTitle('A label to give the click event, if relevant'),
-            NumericField::create('Frequency', 'Display frequency')->setRightTitle('1 in N number of people will see this'),
-            NumericField::create('Delay', 'Delay display (milliseconds)'),
-            DropdownField::create('Transition', 'What display effect should be used?', $transitions),
-            TextField::create('CompletionElement', 'Completion Element(s)')
-                ->setRightTitle('CSS selector for element(s) that are considered the "completion" clicks'),
-
-            CheckboxField::create('HideAfterInteraction'),
-            DropdownField::create('CampaignID', 'Campaign', InteractiveCampaign::get())->setEmptyString('--none--')
-		)));
-
-        if (Permission::check('ADMIN')) {
-            $fields->addFieldToTab(
-                'Root.Main',
-                DropdownField::create('TrackViews', 'Should views be tracked?', array('yes' => 'Yes', 'no' => 'No'))->setEmptyString('Default'),
-                'CampaignID'
-            );
-        }
-
+        // campaign id
+        $main->push(DropdownField::create('CampaignID', 'Campaign', InteractiveCampaign::get())
+            ->setEmptyString('--none--'));
+        // metrics
 		if ($this->ID) {
 			$impressions = $this->getImpressions();
 			$clicks = $this->getClicks();
@@ -139,10 +117,62 @@ class Interactive extends DataObject {
                 new TextareaField('PostInteractionContent', 'Content shown immediately post interaction'),
                 new TextareaField('SubsequentContent', 'Content shown ongoing if user has interacted')
             ));
-		}
+        }
+        // title
+        $main->push(new TextField('Title', 'Title'));
+        // css target
+        $main->push(TextField::create('Element', 'Relative Element')
+            ->setRightTitle('CSS selector for element to appear with'));
+        // positioning
+        $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content', 'existing' => 'Existing content'];
+        $main->push(DropdownField::create('Location', 'Location in / near element', $locations)
+            ->setRightTitle('"Existing content" to bind to existing content'));
+        // hide after
+        $main->push(CheckboxField::create('HideAfterInteraction'));
+        // click label
+        $main->push(TextField::create('Label', 'Label')
+            ->setRightTitle('A label to give the click event, if relevant'));
+
+
+        // advanced dropdown
+        $advanced = new ToggleCompositeField('Advanced', 'Advanced', []);
+        $advanced->setStartClosed(true);
+        $fields->addFieldToTab('Root.Main', $advanced);
+
+        // type
+        $classes = ClassInfo::subclassesFor(self::class);
+        $types = [];
+        foreach ($classes as $cls) {
+            $types[$cls] = singleton($cls)->getTypeLabel();
+        }
+        $advanced->push(DropdownField::create('ClassName', 'Type', $types)->setRightTitle('Type of interactive'));
+        // effect
+        $transitions = ['show' => 'Immediate', 'fadeIn' => 'Fade In', 'slideDown' => 'Slide Down'];
+        $advanced->push(DropdownField::create('Transition', 'What display effect should be used?', $transitions));
+        // frequency
+        $advanced->push(NumericField::create('Frequency', 'Display frequency')->setRightTitle('1 in N number of people will see this'));
+        // delay
+        $advanced->push(NumericField::create('Delay', 'Delay display (milliseconds)'));
+        // target url
+        $advanced->push(
+            TextField::create('TargetURL', 'Target URL')
+                ->setRightTitle('Or select a page below. NOTE: This will replace any links in the interactive\'s content! Leave both blank to use source links')
+        );
+        // target page
+        $advanced->push(new Treedropdownfield('InternalPageID', 'Internal Page Link', 'Page'));
+        // new window
+        $advanced->push(CheckboxField::create('NewWindow', 'Open generated links in a new window'));
+        // completion
+        $advanced->push(TextField::create('CompletionElement', 'Completion Element(s)')->setRightTitle('CSS selector for element(s) that are considered the "completion" clicks'));
+        // tracking
+        if (Permission::check('ADMIN')) {
+            $advanced->push(
+                DropdownField::create('TrackViews', 'Should views be tracked?', ['yes' => 'Yes', 'no' => 'No'])
+                    ->setEmptyString('Default')
+            );
+        }
 
         $this->extend('updateCMSFields', $fields);
-
 		return $fields;
 	}
 

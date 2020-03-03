@@ -504,41 +504,44 @@
         }
 
         holder.forEach(function (elem) {
-            elem.querySelectorAll('a,button').forEach(function (innerElem) {
-                innerElem.setAttribute('data-intid', item.ID);
-                if (item.Label) {
-                    innerElem.setAttribute('data-int-label', item.Label);
-                }
-
-                // see whether we have a specific target link to replace this with
-                if (item.TargetLink && item.TargetLink.length > 0) {
-                    innerElem.setAttribute('href', item.TargetLink);
-                }
-
-                innerElem.classList.add('int-link');
-
-                // if there's a completion element identified, we pass on the information about
-                // this item in the link
-                if (item.CompletionElement) {
-                    var append = 'int_src=' + current_uuid() + '&int_id=' + item.ID;
-                    var newLink = innerElem.getAttribute('href');
-                    if (newLink.indexOf('?') >= 0) {
-                        append = "&" + append;
-                    } else {
-                        append = "?" + append;
+            // 300 ms delay to allow for react rendering to occur before we query the ele's DOM
+            setTimeout(() => {
+                elem.querySelectorAll('a,button').forEach(function (innerElem) {
+                    innerElem.setAttribute('data-intid', item.ID);
+                    if (item.Label) {
+                        innerElem.setAttribute('data-int-label', item.Label);
                     }
-                    innerElem.setAttribute('href', newLink + append);
-                }
 
-                if (item.HideAfterInteraction) {
-                    innerElem.classList.add('hide-on-interact');
-                }
-            });
+                    // see whether we have a specific target link to replace this with
+                    if (item.TargetLink && item.TargetLink.length > 0) {
+                        innerElem.setAttribute('href', item.TargetLink);
+                    }
 
-            elem.setAttribute('data-intid', item.ID)
-            if (item.TrackViews) {
-                elem.classList.add('int-track-view');
-            }
+                    innerElem.classList.add('int-link');
+
+                    // if there's a completion element identified, we pass on the information about
+                    // this item in the link
+                    if (item.CompletionElement) {
+                        var append = 'int_src=' + current_uuid() + '&int_id=' + item.ID;
+                        var newLink = innerElem.getAttribute('href');
+                        if (newLink.indexOf('?') >= 0) {
+                            append = "&" + append;
+                        } else {
+                            append = "?" + append;
+                        }
+                        innerElem.setAttribute('href', newLink + append);
+                    }
+
+                    if (item.HideAfterInteraction) {
+                        innerElem.classList.add('hide-on-interact');
+                    }
+                });
+
+                elem.setAttribute('data-intid', item.ID)
+                if (item.TrackViews) {
+                    elem.classList.add('int-track-view');
+                }
+            }, 300);
         });
 
         var timeout = item.Delay ? item.Delay : 0;
