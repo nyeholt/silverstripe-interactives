@@ -61,14 +61,6 @@ class InteractiveCampaign extends DataObject
             // end of 30 days from now
             $this->Expires = date(static::$datetimeFormat, strtotime('midnight + 31 days - 1 minute'));
         }
-        // display type
-        if ($display_type = self::config()->DisplayType) {
-            $this->DisplayType = $display_type;
-        }
-        // track in
-        if ($track_in = self::config()->TrackIn) {
-            $this->TrackIn = $track_in;
-        }
         // allowed hosts
         if ($allowed_hosts = self::config()->AllowedHosts) {
             $vals = $this->AllowedHosts ? $this->AllowedHosts->getValue() : [];
@@ -90,10 +82,6 @@ class InteractiveCampaign extends DataObject
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
-
-        $dtFormat = 'Format: "dd/mm/yyyy, hh:mm"';
-        $fields->fieldByName('Root.Main.Begins')->setDescription($dtFormat);
-        $fields->fieldByName('Root.Main.Expires')->setDescription($dtFormat);
 
         $reset = $fields->dataFieldByName('ResetStats');
         $fields->addFieldToTab('Root.Interactives', $reset);
