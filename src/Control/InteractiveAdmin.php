@@ -26,6 +26,6 @@ class InteractiveAdmin extends ModelAdmin {
     protected function init()
     {
         parent::init();
-        Requirements::css('nyeholt/silverstripe-interactives:client/css/admin.css');
+        Requirements::css('symbiote/silverstripe-interactives:client/css/admin.css');
     }
 }
