@@ -505,8 +505,9 @@
 
         holder.forEach(function (elem) {
             // 300 ms delay to allow for react rendering to occur before we query the ele's DOM
-            setTimeout(() => {
-                elem.querySelectorAll('a,button').forEach(function (innerElem) {
+            setTimeout(function () {
+                var linkEles = Array.from(elem.querySelectorAll('a,button'));
+                linkEles.forEach(function (innerElem) {
                     innerElem.setAttribute('data-intid', item.ID);
                     if (item.Label) {
                         innerElem.setAttribute('data-int-label', item.Label);
