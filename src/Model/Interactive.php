@@ -35,20 +35,24 @@ use SilverStripe\Forms\ToggleCompositeField;
  * @author Marcus Nyeholt <marcus@silverstripe.com.au>
  * @license BSD http://silverstripe.org/BSD-license
  */
-class Interactive extends DataObject {
+class Interactive extends DataObject
+{
 
-	private static $use_js_tracking = false;
+    private static $use_js_tracking = false;
 
     private static $table_name = 'Interactive';
 
-	private static $db = [
-		'Title'				=> 'Varchar',
-		'TargetURL'			=> 'Varchar(255)',
+    private static $db = [
+        'Title'                => 'Varchar',
+        'TargetURL'            => 'Varchar(255)',
         'NewWindow'         => 'Boolean',
         'HTMLContent'       => 'HTMLText',
         'Label'             => 'Varchar(64)',
         'PostInteractionContent' => 'HTMLText',
         'SubsequentContent' => 'HTMLText',
+
+        'Preset'            => 'Varchar(64)',             // 'friendly' way to map element class / position options
+        // to configured sets
 
         'Element'           => 'Varchar(64)',           // within which containing element will it display?
         'Location'          => 'Varchar(64)',           // where in its container element?
@@ -61,10 +65,10 @@ class Interactive extends DataObject {
         'CompletionElement'   => 'Varchar(64)',         // what element needs clicking to be considered a 'complete' event
     ];
 
-	private static $has_one = [
-		'InternalPage'		=> 'Page',
-		'Campaign'			=> InteractiveCampaign::class,
-		'Image'				=> Image::class,
+    private static $has_one = [
+        'InternalPage'        => 'Page',
+        'Campaign'            => InteractiveCampaign::class,
+        'Image'                => Image::class,
     ];
 
     private static $owns = [
@@ -81,15 +85,20 @@ class Interactive extends DataObject {
         'Delay' => 0,
     ];
 
+    private static $interactive_presets = [
+    ];
+
     private static $tracker_type = 'Local';
 
     private static $summary_fields = ['Title', 'Clicks', 'Impressions', 'Completes'];
 
-    public function getTypeLabel() {
+    public function getTypeLabel()
+    {
         return "Viewed item";
     }
 
-	public function getCMSFields() {
+    public function getCMSFields()
+    {
         $fields = new FieldList();
 
         // main tab
@@ -100,14 +109,14 @@ class Interactive extends DataObject {
         $main->push(DropdownField::create('CampaignID', 'Campaign', InteractiveCampaign::get())
             ->setEmptyString('--none--'));
         // metrics
-		if ($this->ID) {
-			$impressions = $this->getImpressions();
-			$clicks = $this->getClicks();
+        if ($this->ID) {
+            $impressions = $this->getImpressions();
+            $clicks = $this->getClicks();
 
-			$fields->addFieldToTab('Root.Main', new ReadonlyField('Impressions', 'Impressions', $impressions), 'Title');
-			$fields->addFieldToTab('Root.Main', new ReadonlyField('Clicks', 'Clicks', $clicks), 'Title');
+            $fields->addFieldToTab('Root.Main', new ReadonlyField('Impressions', 'Impressions', $impressions), 'Title');
+            $fields->addFieldToTab('Root.Main', new ReadonlyField('Clicks', 'Clicks', $clicks), 'Title');
 
-            $contentHelp = 'Any link in this content will trigger a tracking event. Select "Existing content" as the Location field to '.
+            $contentHelp = 'Any link in this content will trigger a tracking event. Select "Existing content" as the Location field to ' .
                 'bind to items contained in the named element instead of entering content here';
 
             $fields->addFieldsToTab('Root.Content', array(
@@ -120,13 +129,14 @@ class Interactive extends DataObject {
         }
         // title
         $main->push(new TextField('Title', 'Title'));
-        // css target
-        $main->push(TextField::create('Element', 'Relative Element')
-            ->setRightTitle('CSS selector for element to appear with'));
-        // positioning
-        $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content', 'existing' => 'Existing content'];
-        $main->push(DropdownField::create('Location', 'Location in / near element', $locations)
-            ->setRightTitle('"Existing content" to bind to existing content'));
+
+        $presets = array_keys(self::config()->interactive_presets);
+
+        if (count($presets)) {
+            $presets = array_combine($presets, $presets);
+            $main->push(DropdownField::create('Preset', 'Preset configuration', $presets)->setEmptyString(""));
+        }
+
         // hide after
         $main->push(CheckboxField::create('HideAfterInteraction'));
         // click label
@@ -138,6 +148,14 @@ class Interactive extends DataObject {
         $advanced = new ToggleCompositeField('Advanced', 'Advanced', []);
         $advanced->setStartClosed(true);
         $fields->addFieldToTab('Root.Main', $advanced);
+
+        // css target
+        $advanced->push(TextField::create('Element', 'Relative Element')
+            ->setRightTitle('CSS selector for element to appear with'));
+        // positioning
+        $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content', 'existing' => 'Existing content'];
+        $advanced->push(DropdownField::create('Location', 'Location in / near element', $locations)
+            ->setRightTitle('"Existing content" to bind to existing content'));
 
         // type
         $classes = ClassInfo::subclassesFor(self::class);
@@ -173,20 +191,35 @@ class Interactive extends DataObject {
         }
 
         $this->extend('updateCMSFields', $fields);
-		return $fields;
-	}
+        return $fields;
+    }
 
-	public function getImpressions() {
-		$stats = $this->getCollatedStatistics();
+    public function onBeforeWrite()
+    {
+        parent::onBeforeWrite();
+
+        if ($this->isChanged('Preset', self::CHANGE_VALUE)) {
+            $presets = self::config()->interactive_presets;
+            if (isset($presets[$this->Preset])) {
+                $this->update($presets[$this->Preset]);
+            }
+        }
+    }
+
+    public function getImpressions()
+    {
+        $stats = $this->getCollatedStatistics();
         return isset($stats['View']) ? $stats['View'] : 0;
-	}
+    }
 
-	public function getClicks() {
-		$stats = $this->getCollatedStatistics();
+    public function getClicks()
+    {
+        $stats = $this->getCollatedStatistics();
         return isset($stats['Click']) ? $stats['Click'] : 0;
-	}
+    }
 
-    public function getCompletes() {
+    public function getCompletes()
+    {
         $stats = $this->getCollatedStatistics();
         return isset($stats['Complete']) ? $stats['Complete'] : 0;
     }
@@ -199,14 +232,13 @@ class Interactive extends DataObject {
      * @param mixed $timeframe
      * @return array
      */
-    protected function getCollatedStatistics($timeframe = null) {
+    protected function getCollatedStatistics($timeframe = null)
+    {
         if ($this->stats) {
             return $this->stats;
         }
 
-        $stats = array(
-
-        );
+        $stats = array();
 
         $mappedStats = InteractiveImpression::get()->filter(array(
             'InteractiveID' => $this->ID
@@ -222,38 +254,39 @@ class Interactive extends DataObject {
         return $stats;
     }
 
-	public function forTemplate($width = null, $height = null) {
-		$inner = Convert::raw2xml($this->Title);
-		if ($this->ImageID && $this->Image()->ID) {
-			if ($width) {
+    public function forTemplate($width = null, $height = null)
+    {
+        $inner = Convert::raw2xml($this->Title);
+        if ($this->ImageID && $this->Image()->ID) {
+            if ($width) {
                 $converted = $this->Image()->SetRatioSize($width, $height);
                 if ($converted) {
                     $inner = $converted->forTemplate();
                 }
-
-			} else {
+            } else {
                 $inner = $this->Image()->forTemplate();
-			}
-		}
+            }
+        }
 
-		$class = '';
-		if (self::config()->use_js_tracking) {
-			$class = 'class="intlink" ';
-		}
+        $class = '';
+        if (self::config()->use_js_tracking) {
+            $class = 'class="intlink" ';
+        }
 
         $target = $this->NewWindow ? ' target="_blank"' : '';
 
-		$tag = '<a ' . $class . $target .' href="'.$this->Link().'" data-intid="'.$this->ID.'">'.$inner.'</a>';
+        $tag = '<a ' . $class . $target . ' href="' . $this->Link() . '" data-intid="' . $this->ID . '">' . $inner . '</a>';
 
-		return $tag;
-	}
+        return $tag;
+    }
 
     /**
      * Convert this interactive to a format for display
      *
      * @return array
      */
-    public function forDisplay() {
+    public function forDisplay()
+    {
         $content = strlen($this->HTMLContent) ? $this->HTMLContent : $this->forTemplate();
 
         $inclusionRules = $this->rulesForJson();
@@ -287,27 +320,29 @@ class Interactive extends DataObject {
         return $update->getArrayCopy();
     }
 
-	public function SetRatioSize($width, $height) {
-		return $this->forTemplate($width, $height);
-	}
+    public function SetRatioSize($width, $height)
+    {
+        return $this->forTemplate($width, $height);
+    }
 
-	public function Link() {
+    public function Link()
+    {
         $link = Convert::raw2att($this->InternalPageID ? $this->InternalPage()->AbsoluteLink() : $this->TargetURL);
         return $link;
 
-		if (self::config()->use_js_tracking) {
-			Requirements::javascript(THIRDPARTY_DIR.'/jquery/jquery.js');
-			Requirements::javascript('advertisements/javascript/interactives.js');
+        if (self::config()->use_js_tracking) {
+            Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
+            Requirements::javascript('advertisements/javascript/interactives.js');
 
-			$link = Convert::raw2att($this->InternalPageID ? $this->InternalPage()->AbsoluteLink() : $this->TargetURL);
+            $link = Convert::raw2att($this->InternalPageID ? $this->InternalPage()->AbsoluteLink() : $this->TargetURL);
+        } else {
+            $link = Controller::join_links(Director::baseURL(), 'int-act/go/' . $this->ID);
+        }
+        return $link;
+    }
 
-		} else {
-			$link = Controller::join_links(Director::baseURL(), 'int-act/go/'.$this->ID);
-		}
-		return $link;
-	}
-
-	public function getTarget() {
-		return $this->InternalPageID ? $this->InternalPage()->AbsoluteLink() : $this->TargetURL;
-	}
+    public function getTarget()
+    {
+        return $this->InternalPageID ? $this->InternalPage()->AbsoluteLink() : $this->TargetURL;
+    }
 }
