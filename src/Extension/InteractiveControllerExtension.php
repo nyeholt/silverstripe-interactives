@@ -69,7 +69,9 @@ class InteractiveControllerExtension extends Extension
             //     continue;
             // }
 
-            $items[] = $campaign->forJson();
+            if ($campaign->canView()) {
+                $items[] = $campaign->forJson();
+            }
         }
 
         $item = $for ? $for : null;

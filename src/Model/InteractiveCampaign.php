@@ -29,6 +29,7 @@ class InteractiveCampaign extends DataObject
         'DisplayType' => 'Varchar(64)',
         'TrackIn' => 'Varchar(64)',
         'AllowedHosts' => 'MultiValueField',
+        'IsPublic'     => 'Boolean',
     ];
 
     private static $has_many = [
@@ -42,6 +43,10 @@ class InteractiveCampaign extends DataObject
     private static $extensions = [
         InteractiveLocationExtension::class,
         Versioned::class
+    ];
+
+    private static $defaults = [
+        'IsPublic' => 1,
     ];
 
     private static $datetimeFormat = 'Y-m-d H:i:00';
@@ -89,6 +94,7 @@ class InteractiveCampaign extends DataObject
         // advanced dropdown
         $advanced = new ToggleCompositeField('Advanced', 'Advanced', []);
         $advanced->setStartClosed(true);
+
         $fields->addFieldToTab('Root.Main', $advanced);
 
         // display type
@@ -109,7 +115,17 @@ class InteractiveCampaign extends DataObject
         $client = DropdownField::create('ClientID', 'Client', InteractiveClient::get()->map('ID', 'Title'));
         $advanced->push($client);
 
+        $f = $fields->dataFieldByName('IsPublic');
+        $fields->removeByName('IsPublic');
+        $advanced->push($f);
+
+
         return $fields;
+    }
+
+    public function canView($member = null)
+    {
+        return $this->IsPublic || parent::canView($member);
     }
 
     public function onBeforeWrite()
