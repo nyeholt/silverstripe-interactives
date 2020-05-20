@@ -97,6 +97,42 @@ class Interactive extends DataObject
         return "Viewed item";
     }
 
+    public function canView($member = null)
+    {
+        $p = $this->Campaign();
+        if ($p && $p->ID) {
+            return $p->canView($member);
+        }
+        return parent::canView($member);
+    }
+
+    public function canCreate($member = null, $context = array())
+    {
+        $p = $this->Campaign();
+        if ($p && $p->ID) {
+            return $p->canEdit($member);
+        }
+        return parent::canCreate($member);
+    }
+
+    public function canDelete($member = null)
+    {
+        $p = $this->Campaign();
+        if ($p && $p->ID) {
+            return $p->canEdit($member);
+        }
+        return parent::canDelete($member);
+    }
+
+    public function canEdit($member = null)
+    {
+        $p = $this->Campaign();
+        if ($p && $p->ID) {
+            return $p->canEdit($member);
+        }
+        return parent::canEdit($member);
+    }
+
     public function getCMSFields()
     {
         $fields = new FieldList();

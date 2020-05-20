@@ -6,11 +6,17 @@ use Symbiote\Interactives\Extension\InteractiveLocationExtension;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldAddNewButton;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\ORM\Queries\SQLDelete;
 use SilverStripe\View\Requirements;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Security\Group;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
 use SilverStripe\Versioned\Versioned;
+use Symbiote\Interactives\Control\InteractiveAdmin;
 
 /**
  *
@@ -34,6 +40,10 @@ class InteractiveCampaign extends DataObject
 
     private static $has_many = [
         'Interactives' => Interactive::class,
+    ];
+
+    private static $many_many = [
+        'Editors' => Group::class,
     ];
 
     private static $has_one = [
@@ -119,6 +129,12 @@ class InteractiveCampaign extends DataObject
         $fields->removeByName('IsPublic');
         $advanced->push($f);
 
+        /** @var GridField */
+        $grid = $fields->dataFieldByName('Editors');
+        if ($grid) {
+            $grid->getConfig()->removeComponentsByType(GridFieldAddNewButton::class);
+        }
+
 
         return $fields;
     }
@@ -126,6 +142,22 @@ class InteractiveCampaign extends DataObject
     public function canView($member = null)
     {
         return $this->IsPublic || parent::canView($member);
+    }
+
+    public function canEdit($member = null)
+    {
+        if (!$member) {
+            $member = Security::getCurrentUser();
+        }
+        if (!$member->ID) {
+            return false;
+        }
+
+        $editors = $this->Editors()->filter('Members.ID', $member->ID);
+        $o = $editors->toArray();
+
+        $editor = Permission::check('CMS_ACCESS_' . InteractiveAdmin::class) && $editors->count() > 0;
+        return $editor || parent::canEdit($member);
     }
 
     public function onBeforeWrite()
