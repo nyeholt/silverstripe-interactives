@@ -387,6 +387,8 @@
                     addInteractiveItem(item);
                 }
             }
+
+            triggerEvent(document, 'ss_interactive_campaign_loaded', campaign);
         }
     }
 
