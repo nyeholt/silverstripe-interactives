@@ -29,6 +29,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\ToggleCompositeField;
+use SilverStripe\ORM\Connect\PDOQuery;
 
 /**
  *
@@ -85,8 +86,7 @@ class Interactive extends DataObject
         'Delay' => 0,
     ];
 
-    private static $interactive_presets = [
-    ];
+    private static $interactive_presets = [];
 
     private static $tracker_type = 'Local';
 
@@ -276,17 +276,23 @@ class Interactive extends DataObject
 
         $stats = array();
 
-        $mappedStats = InteractiveImpression::get()->filter(array(
-            'InteractiveID' => $this->ID
-        ))->map('ID', 'Interaction');
+        $statsQuery = InteractiveImpression::get()->dataQuery()->getFinalisedQuery(["ID", "Interaction"]);
+        $statsQuery->setWhere('"InteractiveID" = ' . (int) $this->ID);
+        $statsQuery->addGroupBy("Interaction");
+        $statsQuery->selectField("count(*) as Number");
 
-        foreach ($mappedStats as $id => $type) {
-            $current = isset($stats[$type]) ? $stats[$type] : 0;
-            $current += 1;
-            $stats[$type] = $current;
+        /**
+         * @var PDOQuery
+         */
+        $result = $statsQuery->execute();
+
+        if ($result) {
+            foreach ($result as $row) {
+                $stats[$row['Interaction']] = $row['Number'];
+            }
+            $this->stats = $stats;
         }
 
-        $this->stats = $stats;
         return $stats;
     }
 
