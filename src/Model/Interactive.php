@@ -30,6 +30,7 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\ORM\Connect\PDOQuery;
+use Symbiote\Interactives\Control\InteractiveAdmin;
 
 /**
  *
@@ -103,7 +104,7 @@ class Interactive extends DataObject
         if ($p && $p->ID) {
             return $p->canView($member);
         }
-        return parent::canView($member);
+        return $this->ID === 0 ? true : parent::canView($member);
     }
 
     public function canCreate($member = null, $context = array())
@@ -111,7 +112,9 @@ class Interactive extends DataObject
         if ($context && isset($context['Parent']) && $context['Parent']->ID) {
             return $context['Parent']->canEdit($member);
         }
-        return parent::canCreate($member);
+
+        $createNew = $this->ID == 0 && Permission::check('CMS_ACCESS_' . InteractiveAdmin::class);
+        return $createNew || parent::canCreate($member);
     }
 
     public function canDelete($member = null)
@@ -129,7 +132,7 @@ class Interactive extends DataObject
         if ($p && $p->ID) {
             return $p->canEdit($member);
         }
-        return parent::canEdit($member);
+        return $this->ID == 0 && Permission::check('CMS_ACCESS_' . InteractiveAdmin::class) ? true : parent::canEdit($member);
     }
 
     public function getCMSFields()
