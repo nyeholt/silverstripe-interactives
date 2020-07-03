@@ -154,8 +154,6 @@ class InteractiveCampaign extends DataObject
         }
 
         $editors = $this->Editors()->filter('Members.ID', $member->ID);
-        $o = $editors->toArray();
-
         $editor = Permission::check('CMS_ACCESS_' . InteractiveAdmin::class) && $editors->count() > 0;
         return $editor || parent::canEdit($member);
     }

@@ -108,9 +108,8 @@ class Interactive extends DataObject
 
     public function canCreate($member = null, $context = array())
     {
-        $p = $this->Campaign();
-        if ($p && $p->ID) {
-            return $p->canEdit($member);
+        if ($context && isset($context['Parent']) && $context['Parent']->ID) {
+            return $context['Parent']->canEdit($member);
         }
         return parent::canCreate($member);
     }
