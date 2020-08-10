@@ -92,7 +92,7 @@
 
     function init_interactives() {
         if (loaded) {
-            return;
+		// we no longer prevent multiple reloads
         }
 
         loaded = true;
@@ -838,6 +838,7 @@
             get: get_cookie,
             clear: clear_cookie
         },
+	loadInteractives: init_interactives,
         bindCompletionItem: bindCompletionItem,
         uuid: function () {
             return current_uuid();
