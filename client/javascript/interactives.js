@@ -148,19 +148,8 @@
 
         if (config.trackclicks) {
             // see https://gomakethings.com/you-should-always-attach-your-vanilla-js-click-events-to-the-window/
-            document.documentElement.addEventListener('click', function (e) {
-                var context = findClickContext(e.target);
-                if (!context) {
-                    return;
-                }
-
-                if (context.matches('.int-submitted')) {
-                    return;
-                }
-                if (context.matches('.int-link')) {
-                    return recordClick.call(context, e);
-                }
-            });
+            document.documentElement.removeEventListener('click', interactiveClick);
+            document.documentElement.addEventListener('click', interactiveClick);
         }
 
         triggerEvent(document, 'ss_interactives_inited');
@@ -168,6 +157,19 @@
         processViews();
 
         setTimeout(reprocess, 5000);
+    }
+
+    function interactiveClick (e) {
+        var context = findClickContext(e.target);
+        if (!context) {
+            return;
+        }
+        if (context.matches('.int-submitted')) {
+            return;
+        }
+        if (context.matches('.int-link')) {
+            return recordClick.call(context, e);
+        }
     }
 
     /**
