@@ -222,9 +222,11 @@ class Interactive extends DataObject
         $advanced->push(TextField::create('CompletionElement', 'Completion Element(s)')->setRightTitle('CSS selector for element(s) that are considered the "completion" clicks'));
         // tracking
         if (Permission::check('ADMIN')) {
+            $view_tracking = self::config()->view_tracking;
+            $track_conf = ($view_tracking && strlen($view_tracking) > 0) ? $view_tracking : 'no';
             $advanced->push(
                 DropdownField::create('TrackViews', 'Should views be tracked?', ['yes' => 'Yes', 'no' => 'No'])
-                    ->setEmptyString('Default')
+                    ->setEmptyString('Use config value (currently "' . $track_conf . '")')
             );
         }
 
