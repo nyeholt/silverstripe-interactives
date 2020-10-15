@@ -89,7 +89,7 @@ class Interactive extends DataObject
 
     private static $interactive_presets = [];
 
-    private static $tracker_type = 'Local';
+    private static $tracker_type = '';
 
     private static $summary_fields = ['Title', 'Clicks', 'Impressions', 'Completes'];
 

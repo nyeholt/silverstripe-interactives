@@ -57,16 +57,15 @@
 
             if (campaign && campaign.trackIn && Trackers[campaign.trackIn]) {
                 trackFn = Trackers[campaign.trackIn].track;
-            } else {
+            } else if (Trackers[defaultTracker]) {
                 trackFn = Trackers[defaultTracker].track;
             }
-
 
             if (trackFn) {
                 trackFn(ids, event, uid, label);
             } else {
                 if (window.console && window.console.log) {
-                    console.log("Failed to find interactives endpoints");
+                    console.log("No endpoint for recording interactions", ids, event, label);
                 }
             }
         }
@@ -127,7 +126,7 @@
             }
         }
 
-        defaultTracker = config.tracker ? config.tracker : 'Local';
+        defaultTracker = config.tracker ? config.tracker : null;
 
         // bind globally available API endpoints now
         window.SSInteractives.addInteractiveItem = addInteractiveItem;
