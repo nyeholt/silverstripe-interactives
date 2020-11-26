@@ -493,20 +493,7 @@
             effect = item.Transition;
         }
 
-        if (addFunction.length) {
-            var holderElem = document.createElement('div');
-            holderElem.classList.add('ss-interactive-item');
-            holderElem.style.display = 'none';
-            holderElem.innerHTML = item.Content;
-            holder = [holderElem];
-        } else {
-            holder = target;
-            holder.forEach(function (item) {
-                item.classList.add('ss-interactive-item');
-            })
-        }
-
-        holder.forEach(function (elem) {
+        function updateElem(elem) {
             // 300 ms delay to allow for react rendering to occur before we query the ele's DOM
             setTimeout(function () {
                 var linkEles = Array.from(elem.querySelectorAll('a,button'));
@@ -546,7 +533,7 @@
                     elem.classList.add('int-track-view');
                 }
             }, 300);
-        });
+        };
 
         var timeout = item.Delay ? item.Delay : 0;
 
@@ -557,20 +544,28 @@
 
                 target.forEach(function (elem) {
                     var position = legacy_add_mapping[addFunction];
-                    holder.forEach(function (insertElem) {
-                        if (position === 'html') {
-                            elem.innerHTML = '';
-                            elem.appendChild(insertElem);
-                        } else {
-                            elem.insertAdjacentElement(position, insertElem);
-                        }
-
-                        insertElem.style.display = '';
-                    })
+                    var holderElem = document.createElement('div');
+                    holderElem.classList.add('ss-interactive-item');
+                    holderElem.style.display = 'none';
+                    holderElem.innerHTML = item.Content;
+                    updateElem(holderElem);
+                    if (position === 'html') {
+                        elem.innerHTML = '';
+                        elem.appendChild(holderElem);
+                    } else {
+                        elem.insertAdjacentElement(position, holderElem);
+                    }
+                    holderElem.style.display = '';
                 });
 
                 triggerEvent(document, 'ss_interactive_loaded', item);
             }, timeout);
+        } else {
+            holder = target;
+            holder.forEach(function (holderElem) {
+                holderElem.classList.add('ss-interactive-item');
+                updateElem(holderElem);
+            });
         }
     };
 
