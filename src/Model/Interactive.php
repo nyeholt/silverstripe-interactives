@@ -282,6 +282,9 @@ class Interactive extends DataObject
 
         $statsQuery = InteractiveImpression::get()->dataQuery()->getFinalisedQuery(["ID", "Interaction"]);
         $statsQuery->setWhere('"InteractiveID" = ' . (int) $this->ID);
+        $statsQuery->setSelect(array(
+            'Interaction' => '"Interaction"'
+        ));
         $statsQuery->addGroupBy("Interaction");
         $statsQuery->selectField("count(*) as Number");
 
