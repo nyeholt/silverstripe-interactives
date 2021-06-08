@@ -53,10 +53,10 @@ class Interactive extends DataObject
         'PostInteractionContent' => 'HTMLText',
         'SubsequentContent' => 'HTMLText',
 
-        'Preset'            => 'Varchar(64)',             // 'friendly' way to map element class / position options
+        'Preset'            => 'Varchar(255)',             // 'friendly' way to map element class / position options
         // to configured sets
 
-        'Element'           => 'Varchar(64)',           // within which containing element will it display?
+        'Element'           => 'Varchar(255)',           // within which containing element will it display?
         'Location'          => 'Varchar(64)',           // where in its container element?
         'Frequency'         => 'Int',                   // how often? 1 in X number of users see this
         'Delay'             => 'Int',                   // how long until it displays?
@@ -64,7 +64,7 @@ class Interactive extends DataObject
         'HideAfterInteraction'  => 'Boolean',           // should the item not appear if someone has interacted with it?
         'TrackViews'        => 'Varchar(16)',
 
-        'CompletionElement'   => 'Varchar(64)',         // what element needs clicking to be considered a 'complete' event
+        'CompletionElement'   => 'Varchar(255)',         // what element needs clicking to be considered a 'complete' event
     ];
 
     private static $has_one = [
