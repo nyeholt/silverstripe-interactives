@@ -90,11 +90,7 @@
     });
 
     function init_interactives() {
-        if (loaded) {
-		// we no longer prevent multiple reloads
-        }
 
-        loaded = true;
         for (var property in window.SSInteractives.config) {
             config[property] = window.SSInteractives.config[property];
         }
@@ -155,7 +151,10 @@
 
         processViews();
 
-        setTimeout(reprocess, 5000);
+        if (!loaded) {
+            setTimeout(reprocess, 5000);
+        }
+        loaded = true;
     }
 
     function interactiveClick (e) {
