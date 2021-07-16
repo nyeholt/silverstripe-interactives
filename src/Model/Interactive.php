@@ -4,7 +4,6 @@ namespace Symbiote\Interactives\Model;
 
 use ArrayObject;
 use SilverStripe\Forms\TreeDropdownField;
-
 use Symbiote\Interactives\Model\InteractiveCampaign;
 use SilverStripe\Assets\Image;
 use Symbiote\Interactives\Extension\InteractiveLocationExtension;
@@ -53,18 +52,18 @@ class Interactive extends DataObject
         'PostInteractionContent' => 'HTMLText',
         'SubsequentContent' => 'HTMLText',
 
-        'Preset'            => 'Varchar(255)',             // 'friendly' way to map element class / position options
+        'Preset'            => 'Varchar(255)', // 'friendly' way to map element class / position options
         // to configured sets
 
-        'Element'           => 'Varchar(255)',           // within which containing element will it display?
-        'Location'          => 'Varchar(64)',           // where in its container element?
-        'Frequency'         => 'Int',                   // how often? 1 in X number of users see this
-        'Delay'             => 'Int',                   // how long until it displays?
-        'Transition'        => 'Varchar(64)',           // how does it appear?
-        'HideAfterInteraction'  => 'Boolean',           // should the item not appear if someone has interacted with it?
+        'Element'           => 'Varchar(255)', // within which containing element will it display?
+        'Location'          => 'Varchar(64)', // where in its container element?
+        'Frequency'         => 'Int', // how often? 1 in X number of users see this
+        'Delay'             => 'Int', // how long until it displays?
+        'Transition'        => 'Varchar(64)', // how does it appear?
+        'HideAfterInteraction'  => 'Boolean', // should the item not appear if someone has interacted with it?
         'TrackViews'        => 'Varchar(16)',
 
-        'CompletionElement'   => 'Varchar(255)',         // what element needs clicking to be considered a 'complete' event
+        'CompletionElement'   => 'Varchar(255)', // what element needs clicking to be considered a 'complete' event
     ];
 
     private static $has_one = [
@@ -132,7 +131,8 @@ class Interactive extends DataObject
         if ($p && $p->ID) {
             return $p->canEdit($member);
         }
-        return $this->ID == 0 && Permission::check('CMS_ACCESS_' . InteractiveAdmin::class) ? true : parent::canEdit($member);
+        $permissionCheck = Permission::check('CMS_ACCESS_' . InteractiveAdmin::class) ? true : parent::canEdit($member);
+        return $this->ID == 0 && $permissionCheck;
     }
 
     public function getCMSFields()
@@ -154,8 +154,8 @@ class Interactive extends DataObject
             $fields->addFieldToTab('Root.Main', new ReadonlyField('Impressions', 'Impressions', $impressions), 'Title');
             $fields->addFieldToTab('Root.Main', new ReadonlyField('Clicks', 'Clicks', $clicks), 'Title');
 
-            $contentHelp = 'Any link in this content will trigger a tracking event. Select "Existing content" as the Location field to ' .
-                'bind to items contained in the named element instead of entering content here';
+            $contentHelp = 'Any link in this content will trigger a tracking event. Select "Existing content" as' .
+                'the Location field to bind to items contained in the named element instead of entering content here';
 
             $fields->addFieldsToTab('Root.Content', array(
                 LiteralField::create('ContentHelp', _t('Interactives.CONTENT_HELP', $contentHelp)),
@@ -191,10 +191,16 @@ class Interactive extends DataObject
         $advanced->push(TextField::create('Element', 'Relative Element')
             ->setRightTitle('CSS selector for element to appear with'));
         // positioning
-        $locations = ['prepend' => 'Top', 'append' => 'Bottom', 'before' => 'Before', 'after' => 'After', 'html' => 'Replace content', 'existing' => 'Existing content'];
+        $locations = [
+            'prepend'   => 'Top',
+            'append'    => 'Bottom',
+            'before'    => 'Before',
+            'after'     => 'After',
+            'html'      => 'Replace content',
+            'existing'  => 'Existing content'
+        ];
         $advanced->push(DropdownField::create('Location', 'Location in / near element', $locations)
             ->setRightTitle('"Existing content" to bind to existing content'));
-
         // type
         $classes = ClassInfo::subclassesFor(self::class);
         $types = [];
@@ -206,20 +212,23 @@ class Interactive extends DataObject
         $transitions = ['show' => 'Immediate', 'fadeIn' => 'Fade In', 'slideDown' => 'Slide Down'];
         $advanced->push(DropdownField::create('Transition', 'What display effect should be used?', $transitions));
         // frequency
-        $advanced->push(NumericField::create('Frequency', 'Display frequency')->setRightTitle('1 in N number of people will see this'));
+        $advanced->push(NumericField::create('Frequency', 'Display frequency')
+            ->setRightTitle('1 in N number of people will see this'));
         // delay
         $advanced->push(NumericField::create('Delay', 'Delay display (milliseconds)'));
         // target url
         $advanced->push(
             TextField::create('TargetURL', 'Target URL')
-                ->setRightTitle('Or select a page below. NOTE: This will replace any links in the interactive\'s content! Leave both blank to use source links')
+                ->setRightTitle('Or select a page below. NOTE: This will replace any links in the interactive\'s' .
+                'content! Leave both blank to use source links')
         );
         // target page
         $advanced->push(new Treedropdownfield('InternalPageID', 'Internal Page Link', 'Page'));
         // new window
         $advanced->push(CheckboxField::create('NewWindow', 'Open generated links in a new window'));
         // completion
-        $advanced->push(TextField::create('CompletionElement', 'Completion Element(s)')->setRightTitle('CSS selector for element(s) that are considered the "completion" clicks'));
+        $advanced->push(TextField::create('CompletionElement', 'Completion Element(s)')
+            ->setRightTitle('CSS selector for element(s) that are considered the "completion" clicks'));
         // tracking
         if (Permission::check('ADMIN')) {
             $view_tracking = self::config()->view_tracking;
@@ -308,7 +317,7 @@ class Interactive extends DataObject
         $inner = Convert::raw2xml($this->Title);
         if ($this->ImageID && $this->Image()->ID) {
             if ($width) {
-                $converted = $this->Image()->SetRatioSize($width, $height);
+                $converted = $this->Image()->setRatioSize($width, $height);
                 if ($converted) {
                     $inner = $converted->forTemplate();
                 }
@@ -324,7 +333,15 @@ class Interactive extends DataObject
 
         $target = $this->NewWindow ? ' target="_blank"' : '';
 
-        $tag = '<a ' . $class . $target . ' href="' . $this->Link() . '" data-intid="' . $this->ID . '">' . $inner . '</a>';
+        $tag = '<a '
+         . $class
+         . $target
+         . ' href="'
+         . $this->getLink()
+         . '" data-intid="'
+         . $this->ID . '">'
+         . $inner .
+        '</a>';
 
         return $tag;
     }
@@ -369,12 +386,12 @@ class Interactive extends DataObject
         return $update->getArrayCopy();
     }
 
-    public function SetRatioSize($width, $height)
+    public function setRatioSize($width, $height)
     {
         return $this->forTemplate($width, $height);
     }
 
-    public function Link()
+    public function getLink()
     {
         $link = Convert::raw2att($this->InternalPageID ? $this->InternalPage()->AbsoluteLink() : $this->TargetURL);
         return $link;

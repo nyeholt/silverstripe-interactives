@@ -3,7 +3,6 @@
 namespace Symbiote\Interactives\Extension;
 
 use Page;
-
 use SilverStripe\View\Requirements;
 use SilverStripe\Core\Config\Config;
 use Symbiote\Interactives\Model\Interactive;
@@ -44,8 +43,12 @@ class InteractiveControllerExtension extends Extension
      * @param $class string
      *          The page type associated with the requested URL
      */
-    public function generateInteractivesFragment($url = null, InteractiveClient $client = null, $class = null, $for = null)
-    {
+    public function generateInteractivesFragment(
+        $url = null,
+        InteractiveClient $client = null,
+        $class = null,
+        $for = null
+    ) {
         if (!$url) {
             $url = $this->owner->getRequest()->getURL();
         }
@@ -85,7 +88,7 @@ class InteractiveControllerExtension extends Extension
         }
 
         $data = array(
-            'endpoint' => Director::absoluteBaseURL().'int-act/trk',
+            'endpoint' => Director::absoluteBaseURL() . 'int-act/trk',
             'trackviews' => false,
             'trackclicks' => true,
             'remember' => false,

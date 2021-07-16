@@ -86,7 +86,7 @@ class InteractiveCampaign extends DataObject
                         $vals[] = $host;
                     }
                 }
-            } else if (is_string($allowed_hosts) && !array_search($allowed_hosts, $vals)) {
+            } elseif (is_string($allowed_hosts) && !array_search($allowed_hosts, $vals)) {
                 $vals[] = $allowed_hosts;
             }
             $this->AllowedHosts->setValue($vals);
@@ -111,7 +111,8 @@ class InteractiveCampaign extends DataObject
         $fields->removeByName('DisplayType');
         $options = ['all' => 'All', 'random' => 'Always Random', 'stickyrandom' => 'Sticky Random'];
         $displayType = DropdownField::create('DisplayType', 'Use items as', $options);
-        $displayType->setRightTitle("Should one random item of this list be displayed, or all of them at once? A 'Sticky' item is randomly chosen, but then always shown to the same user");
+        $displayType->setRightTitle("Should an item of this list be displayed, or all of them at once?" .
+            "A 'Sticky'item is randomly chosen, but then always shown to the same user");
         $advanced->push($displayType);
 
         // track in

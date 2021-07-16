@@ -11,7 +11,6 @@ use SilverStripe\Forms\TreeMultiselectField;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\ORM\DataExtension;
 
-
 /**
  * Defines where in a site an interactive / campaign will appear
  *
@@ -52,7 +51,8 @@ class InteractiveLocationExtension extends DataExtension
         $classes = SiteTree::page_type_classes();
         $classes = array_combine($classes, $classes);
         $fields->addFieldsToTab('Root.SiteOptions', [
-            CheckboxField::create('SiteWide', 'All pages in site')->setRightTitle('Uncheck if using include rules; exclude rules overrule this setting'),
+            CheckboxField::create('SiteWide', 'All pages in site')
+                ->setRightTitle('Uncheck if using include rules; exclude rules overrule this setting'),
             TreeMultiselectField::create('OnPages', 'Display on pages', 'Page'),
             ToggleCompositeField::create('InclusionRules', 'Including', [
                 MultiValueTextField::create('IncludeUrls', 'Include URLs that match'),
