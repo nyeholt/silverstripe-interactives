@@ -28,8 +28,9 @@
             "dev-master": "5.5.x-dev"
         },
         "expose": [
-			"client/javascript",
+            "client/javascript",
             "client/css"
         ]
-    }
+    },
+    "minimum-stability": "dev"
 }
