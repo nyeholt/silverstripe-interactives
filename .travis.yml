@@ -57,6 +57,8 @@ matrix:
       env:
         - DB=MYSQL
         - PDO=1
+import:
+  - silverstripe/silverstripe-travis-shared:config/provision/standard-jobs-range.yml
 
 before_script:
   #
