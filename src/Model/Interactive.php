@@ -376,7 +376,7 @@ class Interactive extends DataObject
             'exclude' => $inclusionRules['exclude'],
         );
 
-        $target = $this->Link();
+        $target = $this->getLink();
         if (strlen($target)) {
             $data['TargetLink'] = $target;
         }
