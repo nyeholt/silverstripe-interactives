@@ -55,3 +55,12 @@ Target URLs for the interactive can be set as a fully qualified link, or an inte
 * The "Completion Element" is another jquery selector indicating the element on the target page that, if clicked, triggers a "complete" event for the given interactive. The usecase here being an interactive pointing to a userdefined form page, by setting this to the form submit button (eg _#UserForm_Form_action_process_) the submit of the form will be tracked
 * If HTMLContent is filled out, this is used as the content of the interactive. 
 
+### Elements
+
+To use elements as the content source, add the following to your project config
+
+```
+Symbiote\Interactives\Model\Interactive:
+  extensions:
+    - Symbiote\Interactives\Extension\InteractiveElementalExtension
+``` 
