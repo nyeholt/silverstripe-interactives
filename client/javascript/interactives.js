@@ -2,6 +2,13 @@
 (function () {
     var loaded = false;
 
+    /**
+     * Indicates how long we delay the finalisation of
+     * interactive insertion to account for other libraries swapping
+     * items in/out of contained content such as react
+     */
+    var DOM_LOAD_DELAY = 300;
+
     var config = {
         remember: false,         // remember the user through requests
         trackviews: false,
@@ -492,8 +499,16 @@
             effect = item.Transition;
         }
 
+        /**
+         * Updates an element's contents to bind click handling information
+         */
         function updateElem(elem) {
-            // 300 ms delay to allow for react rendering to occur before we query the ele's DOM
+            elem.setAttribute('data-intid', item.ID)
+            if (item.TrackViews) {
+                elem.classList.add('int-track-view');
+            }
+            // 150 ms delay to allow for other libs to make changes to the internal
+            // dom structure before binding any tracking logic
             setTimeout(function () {
                 var linkEles = Array.from(elem.querySelectorAll('a,button'));
                 linkEles.forEach(function (innerElem) {
@@ -526,12 +541,7 @@
                         innerElem.classList.add('hide-on-interact');
                     }
                 });
-
-                elem.setAttribute('data-intid', item.ID)
-                if (item.TrackViews) {
-                    elem.classList.add('int-track-view');
-                }
-            }, 300);
+            }, DOM_LOAD_DELAY);
         };
 
         var timeout = item.Delay ? item.Delay : 0;
