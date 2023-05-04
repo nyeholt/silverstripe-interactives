@@ -8,7 +8,6 @@ use Symbiote\Interactives\Model\InteractiveClient;
 use Symbiote\Interactives\Model\Interactive;
 use Symbiote\Interactives\Model\InteractiveCampaign;
 
-
 /**
  * Abstracts the interaction of tracking certain interactions
  *
@@ -106,11 +105,11 @@ class InteractiveService
         $out = $query
             ->aggregate('COUNT("ID")', 'NumViews')
             ->addSelect("Item")
-                // ->addWhere('"Item" NOT LIKE \'Home%\'')
+            // ->addWhere('"Item" NOT LIKE \'Home%\'')
             ->setOrderBy('"NumViews" DESC')
             ->addGroupBy(['Item'])
-                // need to do twice the number here, because the limit
-                // gets applied before the group because SilverStripe or something. Sigh
+            // need to do twice the number here, because the limit
+            // gets applied before the group because SilverStripe or something. Sigh
             ->setLimit($number * 2)
             ->execute();
 
@@ -120,13 +119,12 @@ class InteractiveService
                 continue;
             }
             list($table, $id) = explode(',', $row['Item']);
-            $object = new \stdClass;
+            $object = new \stdClass();
             $object->Item = $row['Item'];
             $object->NumViews = $row['NumViews'];
             $objects[] = $object;
         }
         return $objects;
-
     }
 
     protected function memberInteractives($member)

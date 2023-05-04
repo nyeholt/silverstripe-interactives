@@ -70,10 +70,10 @@ class InteractiveImpression extends DataObject
     protected function getBrowserInfo()
     {
         $u_agent = $_SERVER['HTTP_USER_AGENT'];
-// $u_agent = 'MSIE win32';
-// $u_agent = 'mac os x Safari 2';
-// $u_agent = 'mac os x Chrome 8';
-// $u_agent = 'linux Chrome 8';
+        // $u_agent = 'MSIE win32';
+        // $u_agent = 'mac os x Safari 2';
+        // $u_agent = 'mac os x Chrome 8';
+        // $u_agent = 'linux Chrome 8';
 
         $bname    = 'Unknown';
         $platform = 'Unknown';
@@ -111,7 +111,7 @@ class InteractiveImpression extends DataObject
 
         // finally get the correct version number
         $known   = array('Version', $ub, 'other');
-        $pattern = '#(?P<browser>'.join('|', $known).
+        $pattern = '#(?P<browser>' . join('|', $known) .
             ')[/ ]+(?P<version>[0-9.|a-zA-Z.]*)#';
         if (!preg_match_all($pattern, $u_agent, $matches)) {
             // we have no matching number just continue
